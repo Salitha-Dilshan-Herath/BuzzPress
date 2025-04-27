@@ -9,12 +9,19 @@ import SwiftUI
 
 @main
 struct BuzzPressApp: App {
-    let persistenceController = PersistenceController.shared
-
+    @State private var showOnboarding = UserDefaults.isFirstLaunch
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            if showOnboarding {
+                OnboardingCarouselView {
+                    UserDefaults.isFirstLaunch = false
+                    showOnboarding = false
+                }
+            } else {
+                ContentView()
+            }
+            
         }
     }
 }
