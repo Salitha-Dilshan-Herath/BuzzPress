@@ -29,9 +29,40 @@
 		053CDA5D2DA2B85E0057DA70 /* BuzzPressUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BuzzPressUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		055DD2ED2DBE9E3800683CFA /* Exceptions for "BuzzPress" folder in "BuzzPressTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Utility/Fonts/Poppins-Bold.ttf",
+				"Utility/Fonts/Poppins-Regular.ttf",
+			);
+			target = 053CDA522DA2B85E0057DA70 /* BuzzPressTests */;
+		};
+		055DD2EE2DBE9E3800683CFA /* Exceptions for "BuzzPress" folder in "BuzzPressUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Utility/Fonts/Poppins-Bold.ttf",
+				"Utility/Fonts/Poppins-Regular.ttf",
+			);
+			target = 053CDA5C2DA2B85E0057DA70 /* BuzzPressUITests */;
+		};
+		055DD2F42DBE9F0000683CFA /* Exceptions for "BuzzPress" folder in "BuzzPress" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 053CDA3D2DA2B85B0057DA70 /* BuzzPress */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		053CDA402DA2B85B0057DA70 /* BuzzPress */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				055DD2F42DBE9F0000683CFA /* Exceptions for "BuzzPress" folder in "BuzzPress" target */,
+				055DD2ED2DBE9E3800683CFA /* Exceptions for "BuzzPress" folder in "BuzzPressTests" target */,
+				055DD2EE2DBE9E3800683CFA /* Exceptions for "BuzzPress" folder in "BuzzPressUITests" target */,
+			);
 			path = BuzzPress;
 			sourceTree = "<group>";
 		};
@@ -399,6 +430,7 @@
 				DEVELOPMENT_TEAM = MUS9Q23L4C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BuzzPress/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -429,6 +461,7 @@
 				DEVELOPMENT_TEAM = MUS9Q23L4C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BuzzPress/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
