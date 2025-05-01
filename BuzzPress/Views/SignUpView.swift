@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct LoginView: View {
+struct SignUpView: View {
     @StateObject private var viewModel = LoginViewModel()
     @State private var showAlert = false
     
@@ -15,16 +15,11 @@ struct LoginView: View {
         VStack(alignment: .leading, spacing: 20) {
             // Header
             VStack(alignment: .leading, spacing: 8) {
-                Text("Hello")
-                    .font(Font.custom(Constants.FONT_BOLD, size: 40))
-                    .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
-                
-                Text("Again!")
+                Text("Hello!")
                     .font(Font.custom(Constants.FONT_BOLD, size: 40))
                     .foregroundColor(Color(Constants.PRIMARY_COLOR))
                 
-                
-                Text("Welcome back you've \nbeen missed")
+                Text("Signup to get Started")
                     .font(Font.custom(Constants.FONT_REGULAR, size: 20))
                     .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
                 
@@ -113,24 +108,8 @@ struct LoginView: View {
             }
             
             // Guest and Google login
-            HStack(spacing: 20) {
-                Button(action: {
-                    // Guest login action
-                }) {
-                    HStack {
-                        Image(Constants.ICON_PROFILE)
-                            .resizable()
-                            .frame(width: 24, height: 24)
-                        Text("Login as Guest")
-                            .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
-                            .foregroundColor(Color(Constants.BUTTON_TEXT_COLOR))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.black)
-                    .cornerRadius(8)
-                }
+            HStack(spacing: 10) {
+                Spacer()
                 
                 Button(action: {
                     // Google login action
@@ -140,28 +119,29 @@ struct LoginView: View {
                             .resizable()
                             .frame(width: 24, height: 24)
                         Text("Google")
-                            .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
+                            .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
                             .foregroundColor(Color(Constants.BUTTON_TEXT_COLOR))
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
+                    .frame(maxWidth: 174, maxHeight: 48)
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.black)
                     .cornerRadius(8)
                 }
+                
+                Spacer()
             }
             
             // Sign up
             HStack {
                 Spacer()
-                Text("don't have an account?")
+                Text("Already have an account ?")
                     .font(Font.custom(Constants.FONT_REGULAR, size: 14))
                     .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
                 
                 Button(action: {
                     // Sign up action
                 }) {
-                    Text("Sign Up")
+                    Text("Login")
                         .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
                         .foregroundColor(Color(Constants.PRIMARY_COLOR))
                 }
@@ -180,8 +160,8 @@ struct LoginView: View {
     }
 }
 
-struct LoginView_Previews: PreviewProvider {
+struct SignUpView_Previews: PreviewProvider {
     static var previews: some View {
-        LoginView()
+        SignUpView()
     }
 }

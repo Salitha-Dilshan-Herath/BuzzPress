@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct LoginView: View {
-    @State private var username = ""
-    @State private var password = ""
+    @StateObject private var viewModel = LoginViewModel()
+    @State private var showAlert = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -22,34 +22,47 @@ struct LoginView: View {
                 Text("Again!")
                     .font(Font.custom(Constants.FONT_BOLD, size: 40))
                     .foregroundColor(Color(Constants.PRIMARY_COLOR))
-                    
+                
                 
                 Text("Welcome back you've \nbeen missed")
                     .font(Font.custom(Constants.FONT_REGULAR, size: 20))
                     .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
-
+                
             }
             .padding(.bottom, 20)
             
             // Form fields
             VStack(alignment: .leading, spacing: 15) {
-                Text("Username*")
-                    .font(Font.custom(Constants.FONT_REGULAR, size: 14))
-
                 
-                TextField("", text: $username)
+                HStack(alignment: .center, spacing: 1){
+                    Text("Username")
+                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                    Text("*")
+                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                        .foregroundColor(Color.red)
+                }
+                
+                
+                
+                TextField("", text: $viewModel.email)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 15)
                     .frame(height: 45)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                    )
+                    ).autocapitalization(.none)
+                    .keyboardType(.emailAddress)
                 
-                Text("Password*")
-                    .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                HStack(alignment: .center, spacing: 1){
+                    Text("Password")
+                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                    Text("*")
+                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                        .foregroundColor(Color.red)
+                }
                 
-                SecureField("", text: $password)
+                SecureField("", text: $viewModel.password)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 15)
                     .frame(height: 45)
@@ -69,24 +82,35 @@ struct LoginView: View {
                     Text("Forgot the password?")
                         .font(Font.custom(Constants.FONT_REGULAR, size: 14))
                         .foregroundColor(Color(Constants.PRIMARY_COLOR))
-                        
+                    
                 }
                 Spacer()
             }
             
-            
             // Login button
+            
             Button(action: {
-                // Login action
+                viewModel.login { success in
+                    showAlert = true
+                }
             }) {
-                Text("Login")
-                    .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color(Constants.PRIMARY_COLOR))
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                
+                if viewModel.isLoading {
+                    ProgressView()
+                        .tint(.white)
+                } else {
+                    Text("Login")
+                        .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(Constants.PRIMARY_COLOR))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                
             }
+    
+            
             
             // Or continue with
             HStack {
@@ -143,9 +167,9 @@ struct LoginView: View {
                     .font(Font.custom(Constants.FONT_REGULAR, size: 14))
                     .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
                 
-                Button(action: {
-                    // Sign up action
-                }) {
+                NavigationLink {
+                    SignUpView()
+                } label: {
                     Text("Sign Up")
                         .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
                         .foregroundColor(Color(Constants.PRIMARY_COLOR))
@@ -157,6 +181,15 @@ struct LoginView: View {
             Spacer()
         }
         .padding()
+        .alert("Login Status", isPresented: $showAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage ?? "Login successful!")
+        }
+    }
+    
+    private var isFormValid: Bool {
+        !viewModel.email.isEmpty && viewModel.password.count >= 6
     }
 }
 
