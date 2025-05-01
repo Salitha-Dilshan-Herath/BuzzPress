@@ -35,6 +35,7 @@
 			membershipExceptions = (
 				"Utility/Fonts/Poppins-Bold.ttf",
 				"Utility/Fonts/Poppins-Regular.ttf",
+				"Utility/Fonts/Poppins-SemiBold.ttf",
 			);
 			target = 053CDA522DA2B85E0057DA70 /* BuzzPressTests */;
 		};
@@ -43,6 +44,7 @@
 			membershipExceptions = (
 				"Utility/Fonts/Poppins-Bold.ttf",
 				"Utility/Fonts/Poppins-Regular.ttf",
+				"Utility/Fonts/Poppins-SemiBold.ttf",
 			);
 			target = 053CDA5C2DA2B85E0057DA70 /* BuzzPressUITests */;
 		};

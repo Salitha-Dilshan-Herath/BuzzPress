@@ -16,17 +16,17 @@ struct LoginView: View {
             // Header
             VStack(alignment: .leading, spacing: 8) {
                 Text("Hello")
-                    .font(Font.custom("Poppins-Bold", size: 40))
-                    .foregroundColor(Color("cr-title"))
+                    .font(Font.custom(Constants.FONT_BOLD, size: 40))
+                    .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
                 
                 Text("Again!")
-                    .font(Font.custom("Poppins-Bold", size: 40))
-                    .foregroundColor(Color("AccentColor"))
+                    .font(Font.custom(Constants.FONT_BOLD, size: 40))
+                    .foregroundColor(Color(Constants.PRIMARY_COLOR))
                     
                 
                 Text("Welcome back you've \nbeen missed")
-                    .font(Font.custom("Poppins-Regular", size: 20))
-                    .foregroundColor(Color("cr-body-text"))
+                    .font(Font.custom(Constants.FONT_REGULAR, size: 20))
+                    .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
 
             }
             .padding(.bottom, 20)
@@ -34,7 +34,7 @@ struct LoginView: View {
             // Form fields
             VStack(alignment: .leading, spacing: 15) {
                 Text("Username*")
-                    .font(Font.custom("Poppins-Regular", size: 14))
+                    .font(Font.custom(Constants.FONT_REGULAR, size: 14))
 
                 
                 TextField("", text: $username)
@@ -47,7 +47,7 @@ struct LoginView: View {
                     )
                 
                 Text("Password*")
-                    .font(Font.custom("Poppins-Regular", size: 14))
+                    .font(Font.custom(Constants.FONT_REGULAR, size: 14))
                 
                 SecureField("", text: $password)
                     .padding(.vertical, 12)
@@ -67,8 +67,8 @@ struct LoginView: View {
                     // Forgot password action
                 }) {
                     Text("Forgot the password?")
-                        .font(.subheadline)
-                        .foregroundColor(.blue)
+                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                        .foregroundColor(Color(Constants.PRIMARY_COLOR))
                         
                 }
                 Spacer()
@@ -80,9 +80,10 @@ struct LoginView: View {
                 // Login action
             }) {
                 Text("Login")
+                    .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.blue)
+                    .background(Color(Constants.PRIMARY_COLOR))
                     .foregroundColor(.white)
                     .cornerRadius(8)
             }
@@ -91,8 +92,8 @@ struct LoginView: View {
             HStack {
                 VStack { Divider() }
                 Text("or continue with")
-                    .font(.caption)
-                    .foregroundColor(.gray)
+                    .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                    .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
                 VStack { Divider() }
             }
             
@@ -101,20 +102,31 @@ struct LoginView: View {
                 Button(action: {
                     // Guest login action
                 }) {
-                    Text("Login as Guest")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.gray.opacity(0.2))
-                        .foregroundColor(.black)
-                        .cornerRadius(8)
+                    HStack {
+                        Image(Constants.ICON_PROFILE)
+                            .resizable()
+                            .frame(width: 24, height: 24)
+                        Text("Login as Guest")
+                            .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
+                            .foregroundColor(Color(Constants.BUTTON_TEXT_COLOR))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.gray.opacity(0.2))
+                    .foregroundColor(.black)
+                    .cornerRadius(8)
                 }
                 
                 Button(action: {
                     // Google login action
                 }) {
                     HStack {
-                        Image(systemName: "g.circle.fill")
+                        Image(Constants.ICON_GOOGLE)
+                            .resizable()
+                            .frame(width: 24, height: 24)
                         Text("Google")
+                            .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
+                            .foregroundColor(Color(Constants.BUTTON_TEXT_COLOR))
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -128,15 +140,15 @@ struct LoginView: View {
             HStack {
                 Spacer()
                 Text("don't have an account?")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                    .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                    .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
                 
                 Button(action: {
                     // Sign up action
                 }) {
                     Text("Sign Up")
-                        .font(.subheadline)
-                        .foregroundColor(.blue)
+                        .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
+                        .foregroundColor(Color(Constants.PRIMARY_COLOR))
                 }
                 Spacer()
             }
