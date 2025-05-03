@@ -9,7 +9,27 @@ import SwiftUI
 
 struct MainTabView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        TabView{
+            HomePageView( selectedLanguage: "en",
+                          selectedTopics: "technology")
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+            SearchView()
+                .tabItem {
+                    Label("Search", systemImage: "safari")
+                }
+            BookmarkView()
+                .tabItem {
+                    Label("Bookmark", systemImage: "bookmark")
+                }
+            ProfileView()
+                .tabItem {
+                    Label("Profile", systemImage: "person.crop.circle")
+                    
+                }
+        }.backgroundStyle(Color.white)
+            .tabViewStyle(.automatic)
     }
 }
 
