@@ -6,6 +6,32 @@
 //
 import Foundation
 
+
+struct Utility {
+    static func publishedAgo(_ isoDate: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        guard let date = formatter.date(from: isoDate) else {
+            return ""
+        }
+        
+        let now = Date()
+        let diff = Calendar.current.dateComponents([.minute, .hour, .day, .month, .year], from: date, to: now)
+        
+        if let year = diff.year, year > 0 {
+            return "\(year)y ago"
+        } else if let month = diff.month, month > 0 {
+            return "\(month)mo ago"
+        } else if let day = diff.day, day > 0 {
+            return "\(day)d ago"
+        } else if let hour = diff.hour, hour > 0 {
+            return "\(hour)h ago"
+        } else if let minute = diff.minute, minute > 0 {
+            return "\(minute)m ago"
+        } else {
+            return "Just now"
+        }
+    }
+}
 extension UserDefaults {
     private enum Keys {
         static let hasLaunchedBefore = "hasLaunchedBefore"
