@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SignUpView: View {
-    @StateObject private var viewModel = LoginViewModel()
+    @StateObject private var viewModel = SignUpViewModel()
     @State private var showAlert = false
     
     var body: some View {
@@ -85,11 +85,11 @@ struct SignUpView: View {
             
             // Login button
             Button(action: {
-                viewModel.login { success in
+                viewModel.signUp { success in
                     showAlert = true
                 }
             }) {
-                Text("Login")
+                Text("Sign Up")
                     .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -138,9 +138,9 @@ struct SignUpView: View {
                     .font(Font.custom(Constants.FONT_REGULAR, size: 14))
                     .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
                 
-                Button(action: {
-                    // Sign up action
-                }) {
+                NavigationLink {
+                    LoginView()
+                } label: {
                     Text("Login")
                         .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
                         .foregroundColor(Color(Constants.PRIMARY_COLOR))

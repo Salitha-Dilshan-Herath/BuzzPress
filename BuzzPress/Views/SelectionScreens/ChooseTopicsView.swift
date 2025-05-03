@@ -8,15 +8,20 @@
 import SwiftUI
 
 struct ChooseTopicsView: View {
+    let selectedLanguage: String
     @StateObject private var viewModel = TopicViewModel()
+    @Environment(\.presentationMode) var presentationMode
+    @State private var navigateToHome = false
 
     var body: some View {
         VStack {
+            // Search bar
             TextField("Search", text: $viewModel.searchText)
                 .padding()
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.horizontal)
 
+            // Topic selection UI
             WrapHStack(viewModel.filteredTopics, spacing: 10) { topic in
                 Button(action: {
                     viewModel.toggleSelection(for: topic)
@@ -37,25 +42,30 @@ struct ChooseTopicsView: View {
 
             Spacer()
 
+            // Next button
             Button("Next") {
-                print("Selected topics: \(viewModel.selectedTopics)")
+                // Save the selected language and topics
+                let languageVM = LanguageViewModel()
+                languageVM.selectedLanguage = selectedLanguage
+                languageVM.saveSelection(topics: Array(viewModel.selectedTopics))
+
+                navigateToHome = true // Example navigation flag
             }
             .padding()
             .frame(maxWidth: .infinity)
-            .background(Color.blue)
+            .background(viewModel.selectedTopics.isEmpty ? Color.gray : Color.blue)
             .foregroundColor(.white)
             .cornerRadius(10)
             .padding(.horizontal)
+            .disabled(viewModel.selectedTopics.isEmpty)
+
+            // NavigationLink to next screen (e.g., HomeView)
+//            NavigationLink(destination: HomePageView(), isActive: $navigateToHome) {
+//                EmptyView()
+//            }
         }
         .navigationTitle("Choose your Topics")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
-struct ChooseTopicsView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            ChooseTopicsView()
-        }
-    }
-}

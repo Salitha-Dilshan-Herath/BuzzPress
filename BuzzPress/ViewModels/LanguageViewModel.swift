@@ -6,41 +6,41 @@
 //
 
 import Foundation
+import FirebaseAuth
 
 class LanguageViewModel: ObservableObject {
     @Published var allLanguages: [String] = []
     @Published var searchText = ""
-    
-    var filteredLanguages: [String] {
-            if searchText.isEmpty {
-                return allLanguages
-            } else {
-                return allLanguages.filter { $0.lowercased().contains(searchText.lowercased()) }
-            }
-        }
-    
-    init() {
-        loadSupportedLanguages()
-    }
-    
-    private func loadSupportedLanguages() {
-            // Fetch from static dictionary for now
-            allLanguages = languageMap.values.sorted()
-        }
+    @Published var selectedLanguage: String?
 
-        let languageMap: [String: String] = [
-            "ar": "Arabic",
-            "de": "German",
-            "en": "English",
-            "es": "Spanish",
-            "fr": "French",
-            "he": "Hebrew",
-            "it": "Italian",
-            "nl": "Dutch",
-            "no": "Norwegian",
-            "pt": "Portuguese",
-            "ru": "Russian",
-            "se": "Northern Sami",
-            "ud": "Urdu",
-            "zh": "Chinese"
-        ]}
+    var filteredLanguages: [String] {
+        searchText.isEmpty ? allLanguages : allLanguages.filter { $0.lowercased().contains(searchText.lowercased()) }
+    }
+
+    private let languageMap: [String: String] = [
+        "ar": "Arabic", "de": "German", "en": "English", "es": "Spanish",
+        "fr": "French", "he": "Hebrew", "it": "Italian", "nl": "Dutch",
+        "no": "Norwegian", "pt": "Portuguese", "ru": "Russian",
+        "se": "Northern Sami", "ud": "Urdu", "zh": "Chinese"
+    ]
+
+    init() {
+        loadLanguages()
+    }
+
+    func loadLanguages() {
+        allLanguages = languageMap.values.sorted()
+    }
+
+    func saveSelection(topics: [String]) {
+        guard let selectedLanguage = selectedLanguage else { return }
+        let selection = UserSelection(language: selectedLanguage, topics: topics)
+
+        if Auth.auth().currentUser != nil {
+            FirestoreService().saveSelectionForUser(selection)
+        } else {
+            UserDefaultsManager.saveGuestSelection(selection)
+        }
+    }
+}
+

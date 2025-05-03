@@ -10,6 +10,7 @@ import SwiftUI
 struct LoginView: View {
     @StateObject private var viewModel = LoginViewModel()
     @State private var showAlert = false
+    @State private var navigateToLanguageSelection  = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -88,13 +89,11 @@ struct LoginView: View {
             }
             
             // Login button
-            
-            Button(action: {
+                Button(action: {
                 viewModel.login { success in
                     showAlert = true
                 }
             }) {
-                
                 if viewModel.isLoading {
                     ProgressView()
                         .tint(.white)
@@ -107,8 +106,20 @@ struct LoginView: View {
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
-                
+                // Invisible navigation trigger
+                NavigationLink(destination: SelectLanguageView(), isActive: $navigateToLanguageSelection) {
+                        EmptyView()
+                    }
+
+                Spacer()
             }
+            .padding()
+            .alert("Login Successful", isPresented: $viewModel.showSuccessAlert) {
+                Button("OK", role: .cancel) {
+                    navigateToLanguageSelection = true // Go to next screen
+                }
+            }
+            
     
             
             
