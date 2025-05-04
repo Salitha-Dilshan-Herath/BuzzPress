@@ -11,7 +11,7 @@ struct MainTabView: View {
     var body: some View {
         TabView{
             HomePageView( selectedLanguage: "en",
-                          selectedTopics: "technology")
+                          selectedTopics: "business")
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
                 }

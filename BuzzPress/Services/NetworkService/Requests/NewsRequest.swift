@@ -9,14 +9,17 @@ import Foundation
 
 enum NewsRequest {
     
-    case topNews(language: String, category: String, pageSize: Int , page: Int)
+    case top(language: String, category: String, pageSize: Int , page: Int)
+    case everyThing(language: String, searchTxt: String, pageSize: Int , page: Int)
 }
 
 extension NewsRequest : NetworkRequest {
     var scheme: NetworkScheme {
         
         switch self {
-        case .topNews(_, _, _, _):
+        case .top(_, _, _, _):
+            return .https
+        case .everyThing(_, _, _, _):
             return .https
         }
         
@@ -29,18 +32,29 @@ extension NewsRequest : NetworkRequest {
     var path: String {
         
         switch self {
-        case .topNews(_, _, _, _):
+        case .top(_, _, _, _):
             return "/v2/top-headlines"
+        case .everyThing(_, _, _, _):
+            return "/v2/everything"
         }
     }
     
     var parameteres: [URLQueryItem] {
         switch self {
-        case .topNews(let language, let category, let page, let pageSize):
+        case .top(let language, let category, let pageSize, let page):
             let params = [
                 URLQueryItem(name: "apiKey", value: APIConstants.apiKey),
                 URLQueryItem(name: "language", value: language),
                 URLQueryItem(name: "category", value: category),
+                URLQueryItem(name: "page", value: String(page)),
+                URLQueryItem(name: "pageSize", value: String(pageSize))
+            ]
+            return params
+        case .everyThing(language: let language, searchTxt: let searchTxt, pageSize: let pageSize, page: let page):
+            let params = [
+                URLQueryItem(name: "apiKey", value: APIConstants.apiKey),
+                URLQueryItem(name: "language", value: language),
+                URLQueryItem(name: "q", value: searchTxt),
                 URLQueryItem(name: "page", value: String(page)),
                 URLQueryItem(name: "pageSize", value: String(pageSize))
             ]
@@ -51,7 +65,9 @@ extension NewsRequest : NetworkRequest {
     var methods: NetworkMethod {
         
         switch self {
-        case .topNews(_, _, _, _):
+        case .top(_, _, _, _):
+            return .get
+        case .everyThing(_, _, _, _):
             return .get
         }
     }

@@ -22,7 +22,13 @@ class NewsRepository: NewsRepositoryProtocol {
     }
     func getTopNews(language: String, category: String, pageSize: Int, page: Int) async throws -> NewsResponse {
         
-        let request = NewsRequest.topNews(language: language, category: category, pageSize: pageSize, page: page)
+        let request = NewsRequest.top(language: language, category: category, pageSize: pageSize, page: page)
+        let newsResponse: NewsResponse = try await networkService.request(endpoint: request)
+        return newsResponse
+    }
+    
+    func getSearchNews(language: String, searchText: String, pageSize: Int, page: Int) async throws -> NewsResponse {
+        let request = NewsRequest.everyThing(language: language, searchTxt: searchText, pageSize: pageSize, page: page)
         let newsResponse: NewsResponse = try await networkService.request(endpoint: request)
         return newsResponse
     }
