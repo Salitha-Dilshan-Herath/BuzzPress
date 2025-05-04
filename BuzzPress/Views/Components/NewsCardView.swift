@@ -24,6 +24,7 @@ struct NewsCardView: View {
                 Image("ic-launch-screen")
                     .resizable()
                     .frame(height: 200)
+                    .cornerRadius(12)
             }
 
             Text(article.source.name.uppercased())
