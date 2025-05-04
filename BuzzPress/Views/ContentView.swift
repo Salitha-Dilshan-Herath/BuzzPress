@@ -10,7 +10,7 @@ import CoreData
 
 struct ContentView: View {
     
-    @AppStorage("isFirstLaunch") private var isFirstLaunch: Bool = false
+    @AppStorage("isFirstLaunch") private var isFirstLaunch: Bool = true
     @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
     @AppStorage("selectedLanguage") private var selectedLanguage: String = ""
     @AppStorage("selectedTopics") private var selectedTopics: String = ""
@@ -19,7 +19,7 @@ struct ContentView: View {
     var body: some View {
         if isFirstLaunch {
             OnboardingCarouselView {
-                isFirstLaunch = false  // This will automatically update UserDefaults
+                isFirstLaunch = false
             }
         } else {
             if isLoggedIn {

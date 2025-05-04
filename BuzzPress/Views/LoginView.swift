@@ -95,13 +95,13 @@ struct LoginView: View {
             // Login button
             
             Button(action: {
-                viewModel.login { result in
-                    if let user_selection = result {
-                        selectedLanguage = user_selection.language
-                        selectedTopics = user_selection.topics.joined(separator: ",")
+                Task {
+                    if let userSelection = await viewModel.login() {
+                        selectedLanguage = userSelection.language
+                        selectedTopics = userSelection.topics.joined(separator: ",")
                         isLoggedIn = true
-                    }else {
-                        
+                    } else {
+                        showAlert = true
                     }
                 }
             }) {
@@ -139,9 +139,10 @@ struct LoginView: View {
                     // Guest login action
                 }) {
                     HStack {
-                        Image(Constants.ICON_PROFILE)
+                        Image(systemName: "person.crop.circle")
                             .resizable()
                             .frame(width: 24, height: 24)
+                            .foregroundColor(Color(Constants.BUTTON_TEXT_COLOR))
                         Text("Login as Guest")
                             .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
                             .foregroundColor(Color(Constants.BUTTON_TEXT_COLOR))

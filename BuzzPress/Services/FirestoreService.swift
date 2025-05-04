@@ -8,7 +8,12 @@
 import FirebaseFirestore
 import FirebaseAuth
 
-class FirestoreService {
+protocol FirestoreServiceProtocol {
+    func fetchSelectionForUser() async throws -> UserSelection?
+}
+
+class FirestoreService : FirestoreServiceProtocol {
+    
     private let db = Firestore.firestore()
     
     //To save the Language and Topic selection when signing in a new user
@@ -32,27 +37,25 @@ class FirestoreService {
         }
     }
     
-    //To fetch the saved language and topic selection of an existing user when logging in and directed to HomePageView
-    func fetchSelectionForUser(completion: @escaping (UserSelection?) -> Void) {
+    func fetchSelectionForUser() async throws -> UserSelection? {
         guard let userId = Auth.auth().currentUser?.uid else {
-            completion(nil)
-            return
-        }
-
-        db.collection("users").document(userId).getDocument { snapshot, error in
-            if let data = snapshot?.data(),
-               let language = data["language"] as? String,
-               let topics = data["topics"] as? [String] {
-                    print("Selected Language: \(language)")
-                    print("Selected Topics: \(topics)")
-
-                let selection = UserSelection(language: language, topics: topics)
-                completion(selection)
-            } else {
-                print("Failed to fetch user selection: \(error?.localizedDescription ?? "Unknown error")")
-                completion(nil)
+                return nil
             }
-        }
+            
+            let snapshot = try await db.collection("users").document(userId).getDocument()
+            
+            guard let data = snapshot.data(),
+                  let language = data["language"] as? String,
+                  let topics = data["topics"] as? [String] else {
+                print("Failed to parse user selection data")
+                return nil
+            }
+            
+            print("Selected Language: \(language)")
+            print("Selected Topics: \(topics)")
+            
+            return UserSelection(language: language, topics: topics)
     }
+    
 }
 
