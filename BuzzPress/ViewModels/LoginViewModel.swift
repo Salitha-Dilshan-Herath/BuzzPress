@@ -13,6 +13,9 @@ class LoginViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isLoading = false
     @Published var showSuccessAlert = false
+    @Published var userSelection: UserSelection? = nil
+    
+    private let firestoreService = FirestoreService()
 
     func login(completion: @escaping (Bool) -> Void) {
         isLoading = true
@@ -22,12 +25,17 @@ class LoginViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self?.isLoading = false
                 
-                if let error = error {
-                    self?.errorMessage = error.localizedDescription
-                    completion(false)
-                } else {
+                if error == nil {
                     self?.showSuccessAlert = true
-                    completion(true)
+                    self?.firestoreService.fetchSelectionForUser { selection in
+                        DispatchQueue.main.async {
+                            self?.userSelection = selection
+                            completion(true)
+                        }
+                    }
+                } else {
+                    print("Login failed: \(error)")
+                    completion(false)
                 }
             }
         }

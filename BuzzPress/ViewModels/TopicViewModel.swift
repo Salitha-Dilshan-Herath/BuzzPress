@@ -16,6 +16,18 @@ class TopicViewModel: ObservableObject {
     
     @Published var selectedTopics: Set<String> = []
     @Published var searchText: String = ""
+    var isGuest: Bool = true
+
+        var selectionsAreSaved: Bool {
+            if isGuest {
+                return UserDefaults.standard.stringArray(forKey: "guest_selected_topics") != nil
+            } else {
+                // You might want to track Firestore save success with a flag
+                return firestoreSaveSuccessFlag
+            }
+        }
+
+        var firestoreSaveSuccessFlag = false
 
     var filteredTopics: [String] {
         if searchText.isEmpty {
@@ -41,6 +53,11 @@ class TopicViewModel: ObservableObject {
         } else {
             UserDefaultsManager.saveGuestSelection(selection)
         }
+    }
+    
+    func saveSelectionForGuest() {
+        let topics = Array(selectedTopics)
+        UserDefaults.standard.set(topics, forKey: "guest_selected_topics")
     }
 }
 

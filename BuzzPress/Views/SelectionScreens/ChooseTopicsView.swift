@@ -11,7 +11,8 @@ struct ChooseTopicsView: View {
     let selectedLanguage: String
     @StateObject private var viewModel = TopicViewModel()
     @Environment(\.presentationMode) var presentationMode
-    @State private var navigateToHome = false
+    @State private var navigateToOnboardingComplete = false
+    let isGuest: Bool
 
     var body: some View {
         VStack {
@@ -45,11 +46,22 @@ struct ChooseTopicsView: View {
             // Next button
             Button("Next") {
                 // Save the selected language and topics
-                let languageVM = LanguageViewModel()
-                languageVM.selectedLanguage = selectedLanguage
-                languageVM.saveSelection(topics: Array(viewModel.selectedTopics))
-
-                navigateToHome = true // Example navigation flag
+                if isGuest {
+                    viewModel.saveSelectionForGuest()
+                } else {
+                    // Save to Firestore
+                    let languageVM = LanguageViewModel()
+                    languageVM.selectedLanguage = selectedLanguage
+                    languageVM.saveSelection(topics: Array(viewModel.selectedTopics))
+                }
+                // Check if saving was successful
+                if viewModel.selectionsAreSaved {
+                    print("selectionsAreSaved = true")
+                    navigateToOnboardingComplete = true
+                    
+                } else {
+                    print("selectionsAreSaved = false")
+                }
             }
             .padding()
             .frame(maxWidth: .infinity)
@@ -59,10 +71,10 @@ struct ChooseTopicsView: View {
             .padding(.horizontal)
             .disabled(viewModel.selectedTopics.isEmpty)
 
-            // NavigationLink to next screen (e.g., HomeView)
-//            NavigationLink(destination: HomePageView(), isActive: $navigateToHome) {
-//                EmptyView()
-//            }
+            // Navigation Trigger
+            NavigationLink(destination: OnboardingCompleteView(), isActive: $navigateToOnboardingComplete) {
+                EmptyView()
+            }
         }
         .navigationTitle("Choose your Topics")
         .navigationBarTitleDisplayMode(.inline)
