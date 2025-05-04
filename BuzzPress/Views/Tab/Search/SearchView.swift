@@ -30,11 +30,11 @@ struct SearchView: View {
                             .foregroundColor(.gray)
                         
                         TextField("Search", text: $viewModel.searchText)
-                            .foregroundColor(.primary)
+                            .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
                     }
                     .padding(.vertical, 10)
                     .padding(.horizontal, 12)
-                    .background(Color.white)
+                    .background(Color(.systemBackground))
                     .cornerRadius(10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
@@ -90,7 +90,7 @@ struct SearchView: View {
             .task {
                 await viewModel.resetAndFetch(language: "en", topics: selectedCategory)
             }
-        }
+        }.navigationBarTitleDisplayMode(.inline)
     }
 }
 
