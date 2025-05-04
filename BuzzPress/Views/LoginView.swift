@@ -16,221 +16,218 @@ struct LoginView: View {
     @State private var isGuest = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // Header
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Hello")
-                    .font(Font.custom(Constants.FONT_BOLD, size: 40))
-                    .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
-                
-                Text("Again!")
-                    .font(Font.custom(Constants.FONT_BOLD, size: 40))
-                    .foregroundColor(Color(Constants.PRIMARY_COLOR))
-                
-                
-                Text("Welcome back you've \nbeen missed")
-                    .font(Font.custom(Constants.FONT_REGULAR, size: 20))
-                    .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
-                
-            }
-            .padding(.bottom, 20)
-            
-            // Form fields
-            VStack(alignment: .leading, spacing: 15) {
-                
-                HStack(alignment: .center, spacing: 1){
-                    Text("Username")
-                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
-                    Text("*")
-                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
-                        .foregroundColor(Color.red)
-                }
-                
-                
-                
-                TextField("", text: $viewModel.email)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 15)
-                    .frame(height: 45)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                    ).autocapitalization(.none)
-                    .keyboardType(.emailAddress)
-                
-                HStack(alignment: .center, spacing: 1){
-                    Text("Password")
-                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
-                    Text("*")
-                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
-                        .foregroundColor(Color.red)
-                }
-                
-                SecureField("", text: $viewModel.password)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 15)
-                    .frame(height: 45)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                    )
-                
-            }
-            
-            // Forgot password
-            HStack(alignment: .center) {
-                Spacer()
-                Button(action: {
-                    // Forgot password action
-                }) {
-                    Text("Forgot the password?")
-                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+        NavigationStack{
+            VStack(alignment: .leading, spacing: 20) {
+                // Header
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Hello")
+                        .font(Font.custom(Constants.FONT_BOLD, size: 40))
+                        .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
+                    
+                    Text("Again!")
+                        .font(Font.custom(Constants.FONT_BOLD, size: 40))
                         .foregroundColor(Color(Constants.PRIMARY_COLOR))
                     
+                    
+                    Text("Welcome back you've \nbeen missed")
+                        .font(Font.custom(Constants.FONT_REGULAR, size: 20))
+                        .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
+                    
                 }
-                Spacer()
-            }
-            
-            // Login button
+                .padding(.bottom, 20)
+                
+                // Form fields
+                VStack(alignment: .leading, spacing: 15) {
+                    
+                    HStack(alignment: .center, spacing: 1){
+                        Text("Username")
+                            .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                        Text("*")
+                            .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                            .foregroundColor(Color.red)
+                    }
+                    
+                    
+                    
+                    TextField("", text: $viewModel.email)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 15)
+                        .frame(height: 45)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                        ).autocapitalization(.none)
+                        .keyboardType(.emailAddress)
+                    
+                    HStack(alignment: .center, spacing: 1){
+                        Text("Password")
+                            .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                        Text("*")
+                            .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                            .foregroundColor(Color.red)
+                    }
+                    
+                    SecureField("", text: $viewModel.password)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 15)
+                        .frame(height: 45)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                        )
+                    
+                }
+                
+                // Forgot password
+                HStack(alignment: .center) {
+                    Spacer()
+                    Button(action: {
+                        // Forgot password action
+                    }) {
+                        Text("Forgot the password?")
+                            .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                            .foregroundColor(Color(Constants.PRIMARY_COLOR))
+                        
+                    }
+                    Spacer()
+                }
+                
+                // Login button
                 Button(action: {
                     viewModel.login {
                         success in
                         if success, let selection = viewModel.userSelection {
                             self.fetchedSelection = selection
-                                
+                            
                             self.navigateToHome = true
                         } else {
                             showAlert = true
                         }
                     }
                 }) {
-                if viewModel.isLoading {
-                    ProgressView()
-                        .tint(.white)
-                } else {
-                    Text("Login")
-                        .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Text("Login")
+                            .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color(Constants.PRIMARY_COLOR))
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                    // NavigationLink outside the button
+                    NavigationLink(LocalizedStringKey) {
+                        if let selection = fetchedSelection {
+                            MainTabView(
+                                selectedLanguage: selection.language,
+                                selectedTopics: selection.topics.joined(separator: ",")
+                            )
+                        }
+                        
+                    }
+                    
+                    Spacer()
+                }
+                .padding()
+                
+                
+                
+                
+                
+                
+                // Or continue with
+                HStack {
+                    VStack { Divider() }
+                    Text("or continue with")
+                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                        .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
+                    VStack { Divider() }
+                }
+                
+                // Guest and Google login
+                HStack(spacing: 20) {
+                    Button(action: {
+                        // Guest login action
+                        isGuest = true
+                        navigateToLanguageSelection = true
+                    }) {
+                        HStack {
+                            Image(Constants.ICON_PROFILE)
+                                .resizable()
+                                .frame(width: 24, height: 24)
+                            Text("Login as Guest")
+                                .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
+                                .foregroundColor(Color(Constants.BUTTON_TEXT_COLOR))
+                        }
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color(Constants.PRIMARY_COLOR))
-                        .foregroundColor(.white)
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.black)
                         .cornerRadius(8)
-                }
-                    // NavigationLink outside the button
+                    }
+                    // Navigation trigger
                     NavigationLink(
-                        destination: {
-                            if let selection = fetchedSelection {
-                                return AnyView(
-                                    HomePageView(
-                                        selectedLanguage: selection.language,
-                                        selectedTopics: selection.topics.joined(separator: ",")
-                                    )
-                                )
-                            } else {
-                                return AnyView(EmptyView())
-                            }
-                        }(),
-                        isActive: $navigateToHome
+                        destination: SelectLanguageView(isGuest: isGuest),
+                        isActive: $navigateToLanguageSelection
                     ) {
                         EmptyView()
                     }
+                    
+                    Button(action: {
+                        // Google login action
+                    }) {
+                        HStack {
+                            Image(Constants.ICON_GOOGLE)
+                                .resizable()
+                                .frame(width: 24, height: 24)
+                            Text("Google")
+                                .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
+                                .foregroundColor(Color(Constants.BUTTON_TEXT_COLOR))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.black)
+                        .cornerRadius(8)
+                    }
+                }
+                
+                // Sign up
+                HStack {
+                    Spacer()
+                    Text("don't have an account?")
+                        .font(Font.custom(Constants.FONT_REGULAR, size: 14))
+                        .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
+                    
+                    NavigationLink {
+                        SignUpView()
+                    } label: {
+                        Text("Sign Up")
+                            .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
+                            .foregroundColor(Color(Constants.PRIMARY_COLOR))
+                    }
+                    Spacer()
+                }
+                .padding(.top, 10)
+                
                 Spacer()
             }
             .padding()
-            
-            
-            
-            
-            
-            
-            // Or continue with
-            HStack {
-                VStack { Divider() }
-                Text("or continue with")
-                    .font(Font.custom(Constants.FONT_REGULAR, size: 14))
-                    .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
-                VStack { Divider() }
+            .alert("Login Status", isPresented: $showAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(viewModel.errorMessage ?? "Login successful!")
             }
-            
-            // Guest and Google login
-            HStack(spacing: 20) {
-                Button(action: {
-                    // Guest login action
-                    isGuest = true
-                    navigateToLanguageSelection = true
-                }) {
-                    HStack {
-                        Image(Constants.ICON_PROFILE)
-                            .resizable()
-                            .frame(width: 24, height: 24)
-                        Text("Login as Guest")
-                            .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
-                            .foregroundColor(Color(Constants.BUTTON_TEXT_COLOR))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.black)
-                    .cornerRadius(8)
-                }
-                // Navigation trigger
-                NavigationLink(
-                    destination: SelectLanguageView(isGuest: isGuest),
-                    isActive: $navigateToLanguageSelection
-                ) {
-                    EmptyView()
-                }
-                
-                Button(action: {
-                    // Google login action
-                }) {
-                    HStack {
-                        Image(Constants.ICON_GOOGLE)
-                            .resizable()
-                            .frame(width: 24, height: 24)
-                        Text("Google")
-                            .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
-                            .foregroundColor(Color(Constants.BUTTON_TEXT_COLOR))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.black)
-                    .cornerRadius(8)
-                }
-            }
-            
-            // Sign up
-            HStack {
-                Spacer()
-                Text("don't have an account?")
-                    .font(Font.custom(Constants.FONT_REGULAR, size: 14))
-                    .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
-                
-                NavigationLink {
-                    SignUpView()
-                } label: {
-                    Text("Sign Up")
-                        .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
-                        .foregroundColor(Color(Constants.PRIMARY_COLOR))
-                }
-                Spacer()
-            }
-            .padding(.top, 10)
-            
-            Spacer()
         }
-        .padding()
-        .alert("Login Status", isPresented: $showAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(viewModel.errorMessage ?? "Login successful!")
+        
         }
-    }
-    
+        
     private var isFormValid: Bool {
         !viewModel.email.isEmpty && viewModel.password.count >= 6
     }
+    
 }
 
 struct LoginView_Previews: PreviewProvider {

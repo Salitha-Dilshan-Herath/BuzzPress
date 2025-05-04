@@ -34,9 +34,9 @@ struct BuzzPressApp: App {
                     showOnboarding = false
                 }
             } else {
-                NavigationStack {
+                
                     LoginView()
-                }
+                
             }
             
         }
