@@ -22,7 +22,12 @@ struct HomePageView: View {
                         .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
                     
                     if let article = viewModel.trendingArticle {
-                        NewsCardView(article: article)
+                        NavigationLink(destination: NewsDetailsView(article: article)
+                            .navigationBarBackButtonHidden(true)) {
+                            NewsCardView(article: article)
+                                .padding(.bottom, 8)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     
                     // Latest Section
@@ -43,7 +48,12 @@ struct HomePageView: View {
                     }
                     
                     ForEach(viewModel.latestArticles) { article in
-                        NewsRowView(article: article)
+                        NavigationLink(destination: NewsDetailsView(article: article)
+                            .navigationBarBackButtonHidden(true)) {
+                                NewsRowView(article: article)
+                                .padding(.bottom, 8)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
                 .padding()

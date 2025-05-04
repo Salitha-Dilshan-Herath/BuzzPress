@@ -1,0 +1,208 @@
+//
+//  NewsDetailsView.swift
+//  BuzzPress
+//
+//  Created by Spemai on 2025-05-05.
+//
+
+import SwiftUI
+
+struct NewsDetailsView: View{
+    let article: Article
+    @Environment(\.presentationMode) var presentationMode
+    
+    // State variables for like, comment, and bookmark interactions
+    @State private var isLiked = false
+    @State private var isBookmarked = false
+    @State private var likeCount = 10
+    @State private var commentCount = 1000
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    
+                    // Source info
+                    HStack(spacing: 10) {
+                        
+                        if let url = URL(string: Constants.SOURCE_IMAGE_BASE_PATH + (Utility.extractDomain(urlString: article.url) ?? "")) {
+                            AsyncImage(url: url) { image in
+                                image
+                                    .resizable()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                            } placeholder: {
+                                ProgressView()
+                                    .padding()
+                            }
+                        }
+                        
+                        VStack(alignment: .leading) {
+                            Text(article.source.name)
+                                .font(.headline)
+                            Text(Utility.publishedAgo(article.publishedAt))
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal)
+                    
+                    // Article image
+                    if let imageUrl = article.urlToImage, let url = URL(string: imageUrl) {
+                        AsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .cornerRadius(12)
+                                .padding(.horizontal)
+                        } placeholder: {
+                            ProgressView()
+                                .padding()
+                        }
+                    }
+                    
+                    // Title
+                    Text(article.title)
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .padding(.horizontal)
+                    
+                    // Description
+                    if let description = article.description {
+                        Text(AttributedString(description))
+                            .font(Font.custom(Constants.FONT_REGULAR, size: 16))
+                            .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
+                            .padding(.horizontal)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    
+                    // Content
+                    if let content = article.content {
+                        Text(AttributedString(content))
+                            .font(Font.custom(Constants.FONT_REGULAR, size: 16))
+                            .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
+                            .padding(.horizontal)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    
+                    // Interaction buttons
+                    HStack(spacing: 0) {
+                        // Left Content (3 parts, aligned left)
+                        HStack(spacing: 15) { // Adjust spacing between like buttons
+                            // Like Button 1
+                            HStack(spacing: 5) {
+                                Image(systemName: isLiked ? "heart.fill" : "heart")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.pink)
+                                Text("\(likeCount)")
+                                    .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
+                                    .font(Font.custom(Constants.FONT_REGULAR, size: 20))
+                            }
+                            .onTapGesture {
+                                isLiked.toggle()
+                                likeCount += isLiked ? 1 : -1
+                            }
+                            
+                            // Like Button 2 (or any other left-aligned content)
+                            HStack(spacing: 5) {
+                                Image(systemName: "ellipsis.bubble")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
+                                Text("\(likeCount)")
+                                    .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
+                                    .font(Font.custom(Constants.FONT_REGULAR, size: 20))
+                            }
+                            .onTapGesture {
+                               
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        // Right Content (2 parts, aligned right)
+                        HStack {
+                            Spacer() // ← Push content to the right
+                            Button(action: {
+                                isBookmarked.toggle()
+                            }) {
+                                Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                                    .foregroundColor(.blue)
+                                    .font(.system(size: 24))
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .frame(minWidth: 0, maxWidth: .infinity)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding()
+                    //                    HStack {
+                    //                        // Like
+                    //                        HStack(spacing: 6) {
+                    //                            Image(systemName: isLiked ? "heart.fill" : "heart")
+                    //                                .foregroundColor(.pink)
+                    //                            Text("\(likeCount.formatted(.number.precision(.fractionLength(1))))")
+                    //                                .foregroundColor(.black)
+                    //                                .font(Font.custom(Constants.FONT_REGULAR, size: 16))
+                    //                        }
+                    //                        .onTapGesture {
+                    //                            isLiked.toggle()
+                    //                            likeCount += isLiked ? 1 : -1
+                    //                        }
+                    //
+                    //                        Spacer()
+                    //
+                    //                        // Comment
+                    //                        HStack(spacing: 6) {
+                    //                            Image(systemName: "bubble.right")
+                    //                                .foregroundColor(.black)
+                    //                            Text("\(commentCount.formatted())")
+                    //                                .foregroundColor(.black)
+                    //                                .font(Font.custom(Constants.FONT_REGULAR, size: 16))
+                    //                        }
+                    //                        .onTapGesture {
+                    //                            // Handle comment
+                    //                        }
+                    //
+                    //                        Spacer()
+                    //
+                    //                        // Bookmark
+                    //                        Button(action: {
+                    //                            isBookmarked.toggle()
+                    //                        }) {
+                    //                            Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                    //                                .foregroundColor(.blue)
+                    //                                .font(.system(size: 20))
+                    //                        }
+                    //                    }
+                    //                    .padding(.horizontal)
+                    //                    .padding(.vertical, 12)
+                }
+            }.navigationBarTitleDisplayMode(.inline)
+        }.toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
+                }
+            }
+        }
+    }
+}
+struct NewsDetailsView_Previews: PreviewProvider {
+    static var previews: some View {
+        NewsDetailsView(article: Article(source:
+                                            Source(id: "ds",
+                                                   name: "Yahoo Entertainment"),
+                                         author: "Ian Casselberry",
+                                         title: "NBA playoffs: Jalen Brunson scores 40, leading Knicks to 1st-round series win over Pistons - Yahoo Sports",
+                                         description: "The Knicks will face the Celtics in the Eastern Conference semifinals.",
+                                         url: "https://sports.yahoo.com/nba/article/nba-playoffs-jalen-brunson-hits-game-winning-3-pointer-to-close-out-knicks-first-round-series-win-over-pistons-023119818.html",
+                                         urlToImage: "https://s.yimg.com/ny/api/res/1.2/mV18cqXJTRgeVMq5xOItZg--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD03NjI7Y2Y9d2VicA--/https://s.yimg.com/os/creatr-uploaded-images/2025-04/742da6d0-239a-11f0-bfbf-f875f294e3ea",
+                                         publishedAt: "2025-05-02T02:42:00Z",
+                                         content: "Jalen Brunson's 3-pointer from the top of the arc with 4.3 seconds remaining in regulation lifted the New York Knicks to a 116-113 win over the Detroit Pistons in Game 6 of their first-round NBA play… [+3903 chars]"))
+        
+    }
+}

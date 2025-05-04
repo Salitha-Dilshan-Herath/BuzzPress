@@ -36,7 +36,7 @@ struct NewsCardView: View {
                 .lineLimit(2)
 
             HStack(spacing: 8) {
-                Text(article.source.name)
+                Text(article.author ?? "")
                     .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 13))
                     .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
                 Image(systemName: "clock")

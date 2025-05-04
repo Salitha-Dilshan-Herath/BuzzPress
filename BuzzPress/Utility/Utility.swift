@@ -31,6 +31,19 @@ struct Utility {
             return "Just now"
         }
     }
+    
+    
+    
+    static func extractDomain(urlString: String) -> String? {
+        guard let url = URL(string: urlString),
+              let host = url.host else {
+            return nil
+        }
+        
+        // Remove www. prefix if exists
+        let domain = host.replacingOccurrences(of: "www.", with: "")
+        return domain
+    }
 }
 extension UserDefaults {
     private enum Keys {

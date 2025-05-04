@@ -17,7 +17,9 @@ struct NewsResponse: Codable {
 
 // MARK: - Article
 struct Article: Codable, Identifiable {
-    var id: String { url }
+    var id: String {
+        return "\(source.id ?? "")-\(title)-\(publishedAt)"
+    }
     let source: Source
     let author: String?
     let title: String

@@ -21,4 +21,6 @@ struct Constants {
     
     public static let CATEGORIES = ["General", "Sports", "Technology", "Business", "Health", "Science", "Entertainment"]
     
+    public static let SOURCE_IMAGE_BASE_PATH = "https://logo.clearbit.com/"
+    
 }
