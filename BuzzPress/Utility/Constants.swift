@@ -19,4 +19,6 @@ struct Constants {
     public static let ICON_PROFILE = "ic-profile"
     public static let ICON_GOOGLE = "ic-google"
     
+    public static let CATEGORIES = ["General", "Sports", "Technology", "Business", "Health", "Science", "Entertainment"]
+    
 }

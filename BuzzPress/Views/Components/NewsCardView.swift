@@ -20,6 +20,10 @@ struct NewsCardView: View {
                 }
                 .frame(height: 200)
                 .cornerRadius(12)
+            }else{
+                Image("ic-launch-screen")
+                    .resizable()
+                    .frame(height: 200)
             }
 
             Text(article.source.name.uppercased())
