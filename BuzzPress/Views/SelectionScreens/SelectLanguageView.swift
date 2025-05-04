@@ -9,7 +9,8 @@ import SwiftUI
 struct SelectLanguageView: View {
     
     @StateObject private var viewModel = LanguageViewModel()
-        @State private var selectedLanguage: String? = nil
+    @State private var selectedLanguage: String? = nil
+    @State private var navigateToTopics = false
     
     
     var body: some View {
@@ -66,7 +67,8 @@ struct SelectLanguageView: View {
                 Button(action: {
                     print("Selected language: \(selectedLanguage ?? "None")")
                     // Navigate to next screen
-                }) {
+                    viewModel.selectedLanguage = selectedLanguage
+                        navigateToTopics = true                }) {
                     Text("Next")
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -76,6 +78,15 @@ struct SelectLanguageView: View {
                 }
                 .padding()
                 .disabled(selectedLanguage == nil)
+                
+                // NavigationLink to ChooseTopicView
+                NavigationLink(
+                    destination: ChooseTopicsView(selectedLanguage: selectedLanguage ?? ""),
+                    isActive: $navigateToTopics
+                ) {
+                EmptyView()
+                }
+                .hidden()
             }
         }
 }

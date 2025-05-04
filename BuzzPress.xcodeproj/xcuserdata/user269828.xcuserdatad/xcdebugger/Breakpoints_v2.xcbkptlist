@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "47978AE5-8E38-4B0D-9EFE-906F921D4A43"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "E53982AD-6DE1-4BE3-B571-36FE909A0010"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "BuzzPress/Views/OnboardingCarouselView.swift"
+            startingColumnNumber = "9"
+            endingColumnNumber = "31"
+            startingLineNumber = "148"
+            endingLineNumber = "148"
+            landmarkName = "previews"
+            landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>
