@@ -23,22 +23,10 @@ struct BuzzPressApp: App {
     
     // register app delegate for Firebase setup
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    
-    @State private var showOnboarding = UserDefaults.isFirstLaunch
-    
+        
     var body: some Scene {
         WindowGroup {
-            if showOnboarding {
-                OnboardingCarouselView {
-                    UserDefaults.isFirstLaunch = false
-                    showOnboarding = false
-                }
-            } else {
-                
-                    LoginView()
-                
-            }
-            
+            ContentView()
         }
     }
 }
