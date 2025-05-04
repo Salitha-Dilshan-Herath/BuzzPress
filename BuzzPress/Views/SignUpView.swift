@@ -105,7 +105,8 @@ struct SignUpView: View {
                         .cornerRadius(8)
                 }
                 // Invisible navigation trigger
-                NavigationLink(destination: SelectLanguageView(), isActive: $navigateToLanguageSelection) {
+                NavigationLink(destination: SelectLanguageView(isGuest: false),
+                               isActive: $navigateToLanguageSelection) {
                         EmptyView()
                     }
 

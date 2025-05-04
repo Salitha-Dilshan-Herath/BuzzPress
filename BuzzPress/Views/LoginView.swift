@@ -11,6 +11,9 @@ struct LoginView: View {
     @StateObject private var viewModel = LoginViewModel()
     @State private var showAlert = false
     @State private var navigateToLanguageSelection  = false
+    @State private var navigateToHome = false
+    @State private var fetchedSelection: UserSelection?
+    @State private var isGuest = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -90,10 +93,17 @@ struct LoginView: View {
             
             // Login button
                 Button(action: {
-                viewModel.login { success in
-                    showAlert = true
-                }
-            }) {
+                    viewModel.login {
+                        success in
+                        if success, let selection = viewModel.userSelection {
+                            self.fetchedSelection = selection
+                                
+                            self.navigateToHome = true
+                        } else {
+                            showAlert = true
+                        }
+                    }
+                }) {
                 if viewModel.isLoading {
                     ProgressView()
                         .tint(.white)
@@ -106,21 +116,31 @@ struct LoginView: View {
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
-                // Invisible navigation trigger
-                NavigationLink(destination: SelectLanguageView(), isActive: $navigateToLanguageSelection) {
+                    // NavigationLink outside the button
+                    NavigationLink(
+                        destination: {
+                            if let selection = fetchedSelection {
+                                return AnyView(
+                                    HomePageView(
+                                        selectedLanguage: selection.language,
+                                        selectedTopics: selection.topics.joined(separator: ",")
+                                    )
+                                )
+                            } else {
+                                return AnyView(EmptyView())
+                            }
+                        }(),
+                        isActive: $navigateToHome
+                    ) {
                         EmptyView()
                     }
-
                 Spacer()
             }
             .padding()
-            .alert("Login Successful", isPresented: $viewModel.showSuccessAlert) {
-                Button("OK", role: .cancel) {
-                    navigateToLanguageSelection = true // Go to next screen
-                }
-            }
             
-    
+            
+            
+            
             
             
             // Or continue with
@@ -136,6 +156,8 @@ struct LoginView: View {
             HStack(spacing: 20) {
                 Button(action: {
                     // Guest login action
+                    isGuest = true
+                    navigateToLanguageSelection = true
                 }) {
                     HStack {
                         Image(Constants.ICON_PROFILE)
@@ -150,6 +172,13 @@ struct LoginView: View {
                     .background(Color.gray.opacity(0.2))
                     .foregroundColor(.black)
                     .cornerRadius(8)
+                }
+                // Navigation trigger
+                NavigationLink(
+                    destination: SelectLanguageView(isGuest: isGuest),
+                    isActive: $navigateToLanguageSelection
+                ) {
+                    EmptyView()
                 }
                 
                 Button(action: {

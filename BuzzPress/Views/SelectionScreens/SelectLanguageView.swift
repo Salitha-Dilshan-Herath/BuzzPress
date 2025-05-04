@@ -7,10 +7,11 @@
 
 import SwiftUI
 struct SelectLanguageView: View {
-    
+    var isGuest: Bool
     @StateObject private var viewModel = LanguageViewModel()
     @State private var selectedLanguage: String? = nil
     @State private var navigateToTopics = false
+    
     
     
     var body: some View {
@@ -68,7 +69,15 @@ struct SelectLanguageView: View {
                     print("Selected language: \(selectedLanguage ?? "None")")
                     // Navigate to next screen
                     viewModel.selectedLanguage = selectedLanguage
-                        navigateToTopics = true                }) {
+                    navigateToTopics = true
+                    
+                    if isGuest {
+                        viewModel.saveSelectionForGuest() // Save to UserDefaults
+                    } else {
+                        viewModel.selectedLanguage = selectedLanguage // Already implemented
+                    }
+                    navigateToTopics = true
+                }) {
                     Text("Next")
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -81,7 +90,7 @@ struct SelectLanguageView: View {
                 
                 // NavigationLink to ChooseTopicView
                 NavigationLink(
-                    destination: ChooseTopicsView(selectedLanguage: selectedLanguage ?? ""),
+                    destination: ChooseTopicsView(selectedLanguage: selectedLanguage ?? "", isGuest: isGuest),
                     isActive: $navigateToTopics
                 ) {
                 EmptyView()
@@ -94,10 +103,10 @@ struct SelectLanguageView: View {
 // Preview
 struct SelectLanguageView_Previews: PreviewProvider {
     static var previews: some View {
-        SelectLanguageView()
+        SelectLanguageView(isGuest: true)
             .preferredColorScheme(.light)
         
-        SelectLanguageView()
+        SelectLanguageView(isGuest: true)
             .preferredColorScheme(.dark)
     }
 }

@@ -42,5 +42,10 @@ class LanguageViewModel: ObservableObject {
             UserDefaultsManager.saveGuestSelection(selection)
         }
     }
+    
+    func saveSelectionForGuest() {
+        guard let selected = selectedLanguage else { return }
+        UserDefaults.standard.set(selected, forKey: "guest_selected_language")
+    }
 }
 
