@@ -13,6 +13,7 @@ class SignUpViewModel: ObservableObject {
     @Published var password = ""
     @Published var errorMessage: String?
     @Published var isLoading = false
+    @Published var showSuccessAlert = false
     
     func signUp(completion: @escaping (Bool) -> Void) {
         isLoading = true

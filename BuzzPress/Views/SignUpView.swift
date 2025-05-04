@@ -10,6 +10,7 @@ import SwiftUI
 struct SignUpView: View {
     @StateObject private var viewModel = SignUpViewModel()
     @State private var showAlert = false
+    @State private var navigateToLanguageSelection  = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -83,20 +84,34 @@ struct SignUpView: View {
             }
             
             
+            
             // Login button
-            Button(action: {
+                Button(action: {
                 viewModel.signUp { success in
                     showAlert = true
+                    navigateToLanguageSelection = true
                 }
             }) {
-                Text("Sign Up")
-                    .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color(Constants.PRIMARY_COLOR))
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                if viewModel.isLoading {
+                    ProgressView()
+                        .tint(.white)
+                } else {
+                    Text("Sign In")
+                        .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(Constants.PRIMARY_COLOR))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                // Invisible navigation trigger
+                NavigationLink(destination: SelectLanguageView(), isActive: $navigateToLanguageSelection) {
+                        EmptyView()
+                    }
+
+                Spacer()
             }
+            
             
             // Or continue with
             HStack {
