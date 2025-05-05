@@ -76,7 +76,7 @@ class FirestoreService : FirestoreServiceProtocol {
         
         let batch = db.batch()
         batch.setData(data, forDocument: commentRef)
-        batch.updateData(["commentCount": FieldValue.increment(Int64(1))], forDocument: articleRef)
+        batch.setData(["commentCount": FieldValue.increment(Int64(1))], forDocument: articleRef, merge: true)
         try await batch.commit()
     }
     
@@ -103,7 +103,7 @@ class FirestoreService : FirestoreServiceProtocol {
 
             return NewsComment(
                 userImage: "person.crop.circle",
-                name: user.displayName ?? user.uid,
+                name: (user.displayName ?? user.email) ?? "User",
                 comment: text,
                 timeAgo: Utility.publishedAgo(dateString))
         }

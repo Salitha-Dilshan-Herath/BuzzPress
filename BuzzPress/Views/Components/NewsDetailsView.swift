@@ -161,23 +161,26 @@ struct NewsDetailsView: View{
                 }
             }
         }.sheet(isPresented: $isShowingComments) {
-            NewsCommentView()
+            NewsCommentView(article: self.article)
                 .navigationBarBackButtonHidden(true)
+        }.onChange(of: isShowingComments) { oldValue, newValue in
+            if oldValue == true && newValue == false {
+                Task {
+                    await viewModel.loadInitialData()
+                }
+            }
         }
     }
 }
-//struct NewsDetailsView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        NewsDetailsView(Article(source:
-//                                            Source(id: "ds",
-//                                                   name: "Yahoo Entertainment"),
-//                                           author: "Ian Casselberry",
-//                                           title: "NBA playoffs: Jalen Brunson scores 40, leading Knicks to 1st-round series win over Pistons - Yahoo Sports",
-//                                           description: "The Knicks will face the Celtics in the Eastern Conference semifinals.",
-//                                           url: "https://sports.yahoo.com/nba/article/nba-playoffs-jalen-brunson-hits-game-winning-3-pointer-to-close-out-knicks-first-round-series-win-over-pistons-023119818.html",
-//                                           urlToImage: "https://s.yimg.com/ny/api/res/1.2/mV18cqXJTRgeVMq5xOItZg--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD03NjI7Y2Y9d2VicA--/https://s.yimg.com/os/creatr-uploaded-images/2025-04/742da6d0-239a-11f0-bfbf-f875f294e3ea",
-//                                           publishedAt: "2025-05-02T02:42:00Z",
-//                                           content: "Jalen Brunson's 3-pointer from the top of the arc with 4.3 seconds remaining in regulation lifted the New York Knicks to a 116-113 win over the Detroit Pistons in Game 6 of their first-round NBA play… [+3903 chars]"))
-//
-//    }
-//}
+#Preview {
+    NewsDetailsView(article: Article(source:
+                                        Source(id: "ds",
+                                               name: "Yahoo Entertainment"),
+                                      author: "Ian Casselberry",
+                                      title: "NBA playoffs: Jalen Brunson scores 40, leading Knicks to 1st-round series win over Pistons - Yahoo Sports",
+                                      description: "The Knicks will face the Celtics in the Eastern Conference semifinals.",
+                                      url: "https://sports.yahoo.com/nba/article/nba-playoffs-jalen-brunson-hits-game-winning-3-pointer-to-close-out-knicks-first-round-series-win-over-pistons-023119818.html",
+                                      urlToImage: "https://s.yimg.com/ny/api/res/1.2/mV18cqXJTRgeVMq5xOItZg--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD03NjI7Y2Y9d2VicA--/https://s.yimg.com/os/creatr-uploaded-images/2025-04/742da6d0-239a-11f0-bfbf-f875f294e3ea",
+                                      publishedAt: "2025-05-02T02:42:00Z",
+                                      content: "Jalen Brunson's 3-pointer from the top of the arc with 4.3 seconds remaining in regulation lifted the New York Knicks to a 116-113 win over the Detroit Pistons in Game 6 of their first-round NBA play… [+3903 chars]"))
+}

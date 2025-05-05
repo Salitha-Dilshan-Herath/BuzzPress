@@ -10,7 +10,6 @@ import Foundation
 @MainActor
 class NewsDetailViewModel: ObservableObject {
     
-    @Published var comments: [NewsComment] = []
     @Published var isLiked: Bool = false
     @Published var likeCount: Int = 0
     @Published var commentCount: Int = 0
@@ -34,7 +33,6 @@ class NewsDetailViewModel: ObservableObject {
             async let isLikedResult = repository.isArticleLiked(articleId: articleId)
             async let countsResult = repository.fetchLikeAndCommentCount(articleId: articleId)
 
-            self.comments = try await commentsResult
             self.isLiked = try await isLikedResult
             let counts = try await countsResult
             self.likeCount = counts.likes
@@ -51,16 +49,6 @@ class NewsDetailViewModel: ObservableObject {
             likeCount += newStatus ? 1 : -1
         } catch {
             errorMessage = "Error toggling like: \(error.localizedDescription)"
-        }
-    }
-
-    func addComment(text: String) async {
-        guard !text.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        do {
-            try await repository.addComment(articleId: articleId, text: text)
-            await loadInitialData() // Or just refetch comments and update count
-        } catch {
-            errorMessage = "Error adding comment: \(error.localizedDescription)"
         }
     }
 }
