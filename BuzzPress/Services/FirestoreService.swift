@@ -96,16 +96,15 @@ class FirestoreService : FirestoreServiceProtocol {
                 throw NSError(domain: "InvalidCommentData", code: 400, userInfo: ["documentId": doc.documentID])
             }
             
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateStyle = .medium // e.g., "May 5, 2024"
-            dateFormatter.timeStyle = .none   // Exclude time
-            let dateString = dateFormatter.string(from: timestamp.dateValue())
+            let isoFormatter = ISO8601DateFormatter()
+            isoFormatter.formatOptions = [.withInternetDateTime] // You can customize this
+            let isoString = isoFormatter.string(from: timestamp.dateValue())
 
             return NewsComment(
                 userImage: "person.crop.circle",
                 name: (user.displayName ?? user.email) ?? "User",
                 comment: text,
-                timeAgo: Utility.publishedAgo(dateString))
+                timeAgo: Utility.publishedAgo(isoString))
         }
     }
     
