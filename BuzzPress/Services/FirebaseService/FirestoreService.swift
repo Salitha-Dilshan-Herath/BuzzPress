@@ -9,6 +9,7 @@ import FirebaseFirestore
 import FirebaseAuth
 
 protocol FirestoreServiceProtocol {
+    func loginWithEmail(withEmail: String, password: String) async throws -> User
     func fetchSelectionForUser() async throws -> UserSelection?
     func addComment(articleId: String, text: String) async throws
     func fetchComments(articleId: String) async throws -> [NewsComment]
@@ -26,8 +27,20 @@ struct UserProfile: Codable {
 class FirestoreService : FirestoreServiceProtocol {
     
     private let db = Firestore.firestore()
+    private let auth: AuthProtocol = Auth.auth()
+
     
-    //To save the Language and Topic selection when signing in a new user
+    func loginWithEmail(withEmail: String, password: String) async throws -> User  {
+        
+        do {
+            let result = try await auth.signIn(withEmail: withEmail, password: password)
+            return result.user
+        } catch {
+
+            throw LoginError.mapFromFirebaseError(error)
+        }
+    }
+    
     func saveSelectionForUser(_ selection: UserSelection, completion: ((Error?) -> Void)? = nil) {
         guard let userId = Auth.auth().currentUser?.uid else {
             completion?(NSError(domain: "NoUser", code: 401, userInfo: nil))
@@ -182,6 +195,45 @@ class FirestoreService : FirestoreServiceProtocol {
 
         db.collection("users").document(uid).setData(data, merge: true)
         }
-    
 }
 
+
+
+// MARK: - Protocols for Dependency Injection
+protocol AuthProtocol {
+    func signIn(withEmail email: String, password: String) async throws -> AuthDataResult
+}
+
+extension Auth: AuthProtocol {}
+
+
+
+// MARK: - Error Handling
+enum LoginError: LocalizedError {
+    case invalidCredentials
+    case networkError
+    case unknownError
+    
+    var localizedDescription: String {
+        switch self {
+        case .invalidCredentials:
+            return "Invalid email or password"
+        case .networkError:
+            return "Network error. Please try again."
+        case .unknownError:
+            return "An unknown error occurred"
+        }
+    }
+    
+    static func mapFromFirebaseError(_ error: Error) -> LoginError {
+        let nsError = error as NSError
+        switch nsError.code {
+        case AuthErrorCode.wrongPassword.rawValue, AuthErrorCode.userNotFound.rawValue, AuthErrorCode.invalidCredential.rawValue:
+            return .invalidCredentials
+        case AuthErrorCode.networkError.rawValue:
+            return .networkError
+        default:
+            return .unknownError
+        }
+    }
+}

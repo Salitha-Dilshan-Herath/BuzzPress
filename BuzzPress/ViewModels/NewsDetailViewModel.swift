@@ -29,7 +29,6 @@ class NewsDetailViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            async let commentsResult = repository.fetchComments(articleId: articleId)
             async let isLikedResult = repository.isArticleLiked(articleId: articleId)
             async let countsResult = repository.fetchLikeAndCommentCount(articleId: articleId)
 
