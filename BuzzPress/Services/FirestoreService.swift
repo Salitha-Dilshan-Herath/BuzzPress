@@ -17,6 +17,12 @@ protocol FirestoreServiceProtocol {
     func fetchLikeAndCommentCount(articleId: String) async throws -> (likes: Int, comments: Int)
 }
 
+struct UserProfile: Codable {
+    var username: String
+    var fullName: String
+    var email: String
+}
+
 class FirestoreService : FirestoreServiceProtocol {
     
     private let db = Firestore.firestore()
@@ -144,6 +150,38 @@ class FirestoreService : FirestoreServiceProtocol {
         )
     }
     
+    
+    func fetchUserProfile(for uid: String, completion: @escaping (UserProfile?) -> Void) {
+//            guard let userId = Auth.auth().currentUser?.uid else {
+//                completion(nil)
+//                return
+//            }
+
+            db.collection("users").document(uid).getDocument { snapshot, error in
+                guard let data = snapshot?.data(), error == nil else {
+                    print("Failed to fetch user data: \(error?.localizedDescription ?? "Unknown error")")
+                    completion(nil)
+                    return
+                }
+
+                let username = data["username"] as? String ?? ""
+                let fullName = data["fullName"] as? String ?? ""
+                let email = data["email"] as? String ?? ""
+                completion(UserProfile(username: username, fullName: fullName, email: email))
+            }
+        }
+    
+    func saveUserProfile(_ profile: UserProfile, for uid: String) {
+//            guard let userId = Auth.auth().currentUser?.uid else { return }
+
+            let data: [String: Any] = [
+                "username": profile.username,
+                "fullName": profile.fullName,
+                "email": profile.email
+            ]
+
+        db.collection("users").document(uid).setData(data, merge: true)
+        }
     
 }
 
