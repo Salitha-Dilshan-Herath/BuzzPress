@@ -9,6 +9,8 @@ import Foundation
 
 protocol NewsRepositoryProtocol {
     func getTopNews(language: String, category: String, pageSize: Int , page: Int) async throws -> NewsResponse
+    func getSearchNews(language: String, searchText: String, pageSize: Int , page: Int) async throws -> NewsResponse
+
 }
 
 class NewsRepository: NewsRepositoryProtocol {

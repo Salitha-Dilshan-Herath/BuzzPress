@@ -23,6 +23,7 @@ struct NewsCardView: View {
             }else{
                 Image("ic-launch-screen")
                     .resizable()
+                    .aspectRatio(contentMode: .fill)
                     .frame(height: 200)
                     .cornerRadius(12)
             }

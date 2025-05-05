@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct TrendingNewsListView: View {
-
+    
     @StateObject var viewModel = TrendingNewsViewModel()
     var selectedLanguage: String
     var selectedTopics: String
-
+    
     @Environment(\.presentationMode) var presentationMode
-
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -24,19 +24,23 @@ struct TrendingNewsListView: View {
                             .foregroundColor(.red)
                             .padding()
                     }
-
+                    
                     ForEach(viewModel.latestArticles.indices, id: \.self) { index in
                         let article = viewModel.latestArticles[index]
-                        NewsCardView(article: article)
-                            .onAppear {
-                                if viewModel.shouldLoadMore(currentIndex: index) {
-                                    Task {
-                                        await viewModel.fetchNews(language: selectedLanguage, topics: selectedTopics)
+                        NavigationLink(destination: NewsDetailsView(article: article)
+                            .navigationBarBackButtonHidden(true)) {
+                                NewsCardView(article: article)
+                                    .onAppear {
+                                        if viewModel.shouldLoadMore(currentIndex: index) {
+                                            Task {
+                                                await viewModel.fetchNews(language: selectedLanguage, topics: selectedTopics)
+                                            }
+                                        }
                                     }
-                                }
                             }
+                            .buttonStyle(PlainButtonStyle())
                     }
-
+                    
                     if viewModel.isLoading {
                         HStack {
                             Spacer()
@@ -66,7 +70,7 @@ struct TrendingNewsListView: View {
                         .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
                 }
             }
-
+            
             ToolbarItem(placement: .principal) {
                 Text("Trending")
                     .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))

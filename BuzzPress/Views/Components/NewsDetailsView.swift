@@ -10,12 +10,14 @@ import SwiftUI
 struct NewsDetailsView: View{
     let article: Article
     @Environment(\.presentationMode) var presentationMode
+    @StateObject private var viewModel: NewsDetailViewModel
+    @State private var isShowingComments = false
+
+    init(article: Article) {
+        self.article = article
+        _viewModel = StateObject(wrappedValue: NewsDetailViewModel(articleId: article.id))
+    }
     
-    // State variables for like, comment, and bookmark interactions
-    @State private var isLiked = false
-    @State private var isBookmarked = false
-    @State private var likeCount = 10
-    @State private var commentCount = 1000
     
     var body: some View {
         NavigationStack {
@@ -60,6 +62,12 @@ struct NewsDetailsView: View{
                             ProgressView()
                                 .padding()
                         }
+                    }else {
+                        Image("ic-launch-screen")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .cornerRadius(12)
+                            .padding(.horizontal)
                     }
                     
                     // Title
@@ -92,16 +100,18 @@ struct NewsDetailsView: View{
                         HStack(spacing: 15) { // Adjust spacing between like buttons
                             // Like Button 1
                             HStack(spacing: 5) {
-                                Image(systemName: isLiked ? "heart.fill" : "heart")
+                                Image(systemName: viewModel.isLiked ? "heart.fill" : "heart")
                                     .font(.system(size: 20))
                                     .foregroundColor(.pink)
-                                Text("\(likeCount)")
+                                Text("\(viewModel.likeCount)")
                                     .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
                                     .font(Font.custom(Constants.FONT_REGULAR, size: 20))
                             }
                             .onTapGesture {
-                                isLiked.toggle()
-                                likeCount += isLiked ? 1 : -1
+                                Task {
+                                    await viewModel.toggleLike()
+                                }
+                                
                             }
                             
                             // Like Button 2 (or any other left-aligned content)
@@ -109,12 +119,12 @@ struct NewsDetailsView: View{
                                 Image(systemName: "ellipsis.bubble")
                                     .font(.system(size: 20))
                                     .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
-                                Text("\(likeCount)")
+                                Text("\(viewModel.commentCount)")
                                     .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
                                     .font(Font.custom(Constants.FONT_REGULAR, size: 20))
                             }
                             .onTapGesture {
-                               
+                                isShowingComments = true
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -123,9 +133,9 @@ struct NewsDetailsView: View{
                         HStack {
                             Spacer() // ← Push content to the right
                             Button(action: {
-                                isBookmarked.toggle()
+                                //isBookmarked.toggle()
                             }) {
-                                Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                                Image(systemName: true ? "bookmark.fill" : "bookmark")
                                     .foregroundColor(.blue)
                                     .font(.system(size: 24))
                             }
@@ -135,50 +145,12 @@ struct NewsDetailsView: View{
                     .frame(minWidth: 0, maxWidth: .infinity)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding()
-                    //                    HStack {
-                    //                        // Like
-                    //                        HStack(spacing: 6) {
-                    //                            Image(systemName: isLiked ? "heart.fill" : "heart")
-                    //                                .foregroundColor(.pink)
-                    //                            Text("\(likeCount.formatted(.number.precision(.fractionLength(1))))")
-                    //                                .foregroundColor(.black)
-                    //                                .font(Font.custom(Constants.FONT_REGULAR, size: 16))
-                    //                        }
-                    //                        .onTapGesture {
-                    //                            isLiked.toggle()
-                    //                            likeCount += isLiked ? 1 : -1
-                    //                        }
-                    //
-                    //                        Spacer()
-                    //
-                    //                        // Comment
-                    //                        HStack(spacing: 6) {
-                    //                            Image(systemName: "bubble.right")
-                    //                                .foregroundColor(.black)
-                    //                            Text("\(commentCount.formatted())")
-                    //                                .foregroundColor(.black)
-                    //                                .font(Font.custom(Constants.FONT_REGULAR, size: 16))
-                    //                        }
-                    //                        .onTapGesture {
-                    //                            // Handle comment
-                    //                        }
-                    //
-                    //                        Spacer()
-                    //
-                    //                        // Bookmark
-                    //                        Button(action: {
-                    //                            isBookmarked.toggle()
-                    //                        }) {
-                    //                            Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                    //                                .foregroundColor(.blue)
-                    //                                .font(.system(size: 20))
-                    //                        }
-                    //                    }
-                    //                    .padding(.horizontal)
-                    //                    .padding(.vertical, 12)
                 }
             }.navigationBarTitleDisplayMode(.inline)
-        }.toolbar {
+        }.task { 
+            await viewModel.loadInitialData()
+        }
+        .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
                     presentationMode.wrappedValue.dismiss()
@@ -188,21 +160,27 @@ struct NewsDetailsView: View{
                         .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
                 }
             }
+        }.sheet(isPresented: $isShowingComments) {
+            NewsCommentView(article: self.article)
+                .navigationBarBackButtonHidden(true)
+        }.onChange(of: isShowingComments) { oldValue, newValue in
+            if oldValue == true && newValue == false {
+                Task {
+                    await viewModel.loadInitialData()
+                }
+            }
         }
     }
 }
-struct NewsDetailsView_Previews: PreviewProvider {
-    static var previews: some View {
-        NewsDetailsView(article: Article(source:
-                                            Source(id: "ds",
-                                                   name: "Yahoo Entertainment"),
-                                         author: "Ian Casselberry",
-                                         title: "NBA playoffs: Jalen Brunson scores 40, leading Knicks to 1st-round series win over Pistons - Yahoo Sports",
-                                         description: "The Knicks will face the Celtics in the Eastern Conference semifinals.",
-                                         url: "https://sports.yahoo.com/nba/article/nba-playoffs-jalen-brunson-hits-game-winning-3-pointer-to-close-out-knicks-first-round-series-win-over-pistons-023119818.html",
-                                         urlToImage: "https://s.yimg.com/ny/api/res/1.2/mV18cqXJTRgeVMq5xOItZg--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD03NjI7Y2Y9d2VicA--/https://s.yimg.com/os/creatr-uploaded-images/2025-04/742da6d0-239a-11f0-bfbf-f875f294e3ea",
-                                         publishedAt: "2025-05-02T02:42:00Z",
-                                         content: "Jalen Brunson's 3-pointer from the top of the arc with 4.3 seconds remaining in regulation lifted the New York Knicks to a 116-113 win over the Detroit Pistons in Game 6 of their first-round NBA play… [+3903 chars]"))
-        
-    }
+#Preview {
+    NewsDetailsView(article: Article(source:
+                                        Source(id: "ds",
+                                               name: "Yahoo Entertainment"),
+                                      author: "Ian Casselberry",
+                                      title: "NBA playoffs: Jalen Brunson scores 40, leading Knicks to 1st-round series win over Pistons - Yahoo Sports",
+                                      description: "The Knicks will face the Celtics in the Eastern Conference semifinals.",
+                                      url: "https://sports.yahoo.com/nba/article/nba-playoffs-jalen-brunson-hits-game-winning-3-pointer-to-close-out-knicks-first-round-series-win-over-pistons-023119818.html",
+                                      urlToImage: "https://s.yimg.com/ny/api/res/1.2/mV18cqXJTRgeVMq5xOItZg--/YXBwaWQ9aGlnaGxhbmRlcjt3PTEyMDA7aD03NjI7Y2Y9d2VicA--/https://s.yimg.com/os/creatr-uploaded-images/2025-04/742da6d0-239a-11f0-bfbf-f875f294e3ea",
+                                      publishedAt: "2025-05-02T02:42:00Z",
+                                      content: "Jalen Brunson's 3-pointer from the top of the arc with 4.3 seconds remaining in regulation lifted the New York Knicks to a 116-113 win over the Detroit Pistons in Game 6 of their first-round NBA play… [+3903 chars]"))
 }

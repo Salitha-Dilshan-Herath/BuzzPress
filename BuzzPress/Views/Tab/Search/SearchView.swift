@@ -73,14 +73,18 @@ struct SearchView: View {
                     LazyVStack(alignment: .leading, spacing: 10) {
                         ForEach(viewModel.filteredArticles.indices, id: \.self) { index in
                             let article = viewModel.filteredArticles[index]
-                            NewsCardView(article: article)
-                                .onAppear {
-                                    if index == viewModel.filteredArticles.count - 1 {
-                                        Task {
-                                            await viewModel.fetchNextPage(language: "en")
+                            NavigationLink(destination: NewsDetailsView(article: article)
+                                .navigationBarBackButtonHidden(true)) {
+                                    NewsCardView(article: article)
+                                        .onAppear {
+                                            if index == viewModel.filteredArticles.count - 1 {
+                                                Task {
+                                                    await viewModel.fetchNextPage(language: "en")
+                                                }
+                                            }
                                         }
-                                    }
                                 }
+                                .buttonStyle(PlainButtonStyle())
                         }
                     }
                     .padding(.horizontal)
