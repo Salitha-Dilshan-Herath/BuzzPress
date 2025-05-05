@@ -14,22 +14,50 @@ class ProfileSettingsViewModel: ObservableObject {
     @Published var email = ""
 
     private let firestoreService = FirestoreService()
+    
+    @Published var languageMap: [String: String] = [
+        "ar": "Arabic", "de": "German", "en": "English", "es": "Spanish",
+        "fr": "French", "he": "Hebrew", "it": "Italian", "nl": "Dutch",
+        "no": "Norwegian", "pt": "Portuguese", "ru": "Russian",
+        "se": "Northern Sami", "ud": "Urdu", "zh": "Chinese"
+    ]
+    @Published var selectedLanguageCode: String = "" // default
+    
+    @Published var availableTopics: [String] = [
+        "business", "entertainment", "general", "health",
+        "science", "sports", "technology"
+    ]
 
-    func loadUserProfile() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        firestoreService.fetchUserProfile(for: uid) { [weak self] profile in
-            DispatchQueue.main.async {
-                guard let profile = profile else { return }
-                self?.username = profile.username
-                self?.fullName = profile.fullName
-                self?.email = profile.email
+    @Published var selectedTopic: String = ""
+
+    
+    func loadUserDetails() {
+        Task {
+            do {
+                if let profile = try await firestoreService.fetchUserDetails() {
+                    DispatchQueue.main.async {
+                        self.username = profile.username
+                        self.fullName = profile.fullName
+                        self.email = profile.email
+                        self.selectedLanguageCode = profile.preferredLanguage
+                    }
+                }
+            } catch {
+                print("##ProfileSettingsViewModel## Failed to load user details: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    func saveUserDetailsUpdates() {
+        let updatedProfile = UserProfile(username: username, fullName: fullName, email: email, preferredLanguage: selectedLanguageCode)
+        
+        firestoreService.updatedUserDetails(updatedProfile) { error in
+            if let error = error {
+                print("##ProfileSettingsViewModel## Failed to update user details: \(error.localizedDescription)")
+            } else {
+                print("##ProfileSettingsViewModel## Successfully updated user details.")
             }
         }
     }
 
-    func saveProfileChanges() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        let profile = UserProfile(username: username, fullName: fullName, email: email)
-        firestoreService.saveUserProfile(profile, for: uid)
-    }
 }

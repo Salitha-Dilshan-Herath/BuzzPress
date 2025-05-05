@@ -11,6 +11,7 @@ import FirebaseAuth
 struct ProfileView: View {
     @StateObject private var viewModel = ProfileSettingsViewModel()
     @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
+    
 
     var body: some View {
         VStack {
@@ -36,9 +37,30 @@ struct ProfileView: View {
                 }
 
                 Section(header: Text("Email Address").foregroundColor(.red)) {
-                    TextField("Placeholder Text", text: $viewModel.email)
+                    TextField("Email", text: $viewModel.email)
                         .keyboardType(.emailAddress)
                 }
+                
+                Section(header: Text("Preferred Language")) {
+                    Picker("Select a Language", selection: $viewModel.selectedLanguageCode) {
+                        ForEach(viewModel.languageMap.sorted(by: { $0.value < $1.value }), id: \.key) { code, name in
+                            Text(name).tag(code)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle()) // or .inline, .wheel
+                }
+
+                
+                Section(header: Text("Preferred Topic")) {
+                    Picker("Select a Topic", selection: $viewModel.selectedTopic) {
+                        ForEach(viewModel.availableTopics, id: \.self) { topic in
+                            Text(topic.capitalized).tag(topic)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                }
+
+
 
                 Section {
                     Toggle(isOn: .constant(false)) {
@@ -63,14 +85,16 @@ struct ProfileView: View {
                 }
 
                 Button("Save Changes") {
-                    viewModel.saveProfileChanges()
+                    viewModel.saveUserDetailsUpdates()
                 }
+
                 .frame(maxWidth: .infinity, alignment: .center)
             }
         }
         .onAppear {
-            viewModel.loadUserProfile()
+            viewModel.loadUserDetails()
         }
+
     }
 }
 #Preview {
