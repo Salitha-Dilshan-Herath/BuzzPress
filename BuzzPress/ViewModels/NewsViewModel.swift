@@ -22,6 +22,7 @@ class NewsViewModel: ObservableObject {
     func fetchNews(language: String, topics: String) async {
        
         do {
+            print("##NewsViewModel## currentUser: \(AuthHelper.currentUser?.uid)")
             let newsData = try await repository.getTopNews(language: language, category: topics, pageSize: 10, page: 1)
             self.trendingArticle = newsData.articles.first
             self.latestArticles.append(contentsOf: newsData.articles.dropFirst())
