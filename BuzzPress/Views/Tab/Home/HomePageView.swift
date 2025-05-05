@@ -47,7 +47,7 @@ struct HomePageView: View {
                         }
                     }
                     
-                    ForEach(viewModel.latestArticles) { article in
+                    ForEach(viewModel.latestArticles, id: \.id) { article in
                         NavigationLink(destination: NewsDetailsView(article: article)
                             .navigationBarBackButtonHidden(true)) {
                                 NewsRowView(article: article)

@@ -7,6 +7,7 @@
 
 
 import Foundation
+import CryptoKit
 
 // MARK: - Welcome
 struct NewsResponse: Codable {
@@ -18,7 +19,13 @@ struct NewsResponse: Codable {
 // MARK: - Article
 struct Article: Codable, Identifiable {
     var id: String {
-        return "\(source.id ?? "")-\(title)-\(publishedAt)"
+        // Combine key fields that make an article unique
+        let uniqueString = "\(url)-\(publishedAt)"
+        
+        // Compute SHA256 hash (deterministic)
+        let data = Data(uniqueString.utf8)
+        let hash = SHA256.hash(data: data)
+        return hash.compactMap { String(format: "%02x", $0) }.joined()
     }
     let source: Source
     let author: String?
