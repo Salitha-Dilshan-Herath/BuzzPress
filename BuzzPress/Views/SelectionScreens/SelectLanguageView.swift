@@ -9,95 +9,97 @@ import SwiftUI
 struct SelectLanguageView: View {
     var isGuest: Bool
     @StateObject private var viewModel = LanguageViewModel()
-    @State private var selectedLanguage: String? = nil
+    @Environment(\.presentationMode) var presentationMode
     @State private var navigateToTopics = false
-    
-    
-    
-    var body: some View {
-            VStack {
-                // Header
-                HStack {
-                    Button(action: {
-                        // Go back action
-                    }) {
-                        Image(systemName: "arrow.left")
-                            .foregroundColor(.black)
-                    }
-                    Spacer()
-                    Text("Select your Language")
-                        .font(.headline)
-                    Spacer()
-                    // Placeholder for alignment
-                    Image(systemName: "arrow.left")
-                        .foregroundColor(.clear)
-                }
-                .padding()
+    @AppStorage("selectedLanguage") private var selectedLanguage: String = ""
 
+    var body: some View {
+        NavigationStack {
+            VStack {
                 // Search Bar
                 HStack {
                     TextField("Search", text: $viewModel.searchText)
                         .padding(10)
                         .background(Color(.systemGray6))
                         .cornerRadius(8)
-
+                    
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.gray)
                 }
                 .padding([.horizontal])
-
+                
                 // Language List
-                List(viewModel.filteredLanguages, id: \.self) { language in
+                List(viewModel.sortedLanguages, id: \.code) { language in
                     HStack {
-                        Text(language)
-                            .foregroundColor(selectedLanguage == language ? .blue : .primary)
+                        Text(language.name)
+                            .foregroundColor(selectedLanguage == language.code ? .blue : .primary)
                         Spacer()
-                        if selectedLanguage == language {
+                        if selectedLanguage == language.code {
                             Image(systemName: "checkmark")
                                 .foregroundColor(.blue)
                         }
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        selectedLanguage = language
+                        selectedLanguage = language.code
                     }
                 }
                 .listStyle(PlainListStyle())
-
+                
                 // Next Button
                 Button(action: {
-                    print("Selected language: \(selectedLanguage ?? "None")")
+                    print("Selected language: \(selectedLanguage)")
                     // Navigate to next screen
                     viewModel.selectedLanguage = selectedLanguage
                     navigateToTopics = true
                     
                     if isGuest {
-                        viewModel.saveSelectionForGuest() // Save to UserDefaults
+                        viewModel.saveSelectionForGuest()
+                        navigateToTopics = true
                     } else {
-                        viewModel.selectedLanguage = selectedLanguage // Already implemented
+                        Task {
+                            await viewModel.saveSelection()
+                            navigateToTopics = true
+                        }
                     }
-                    navigateToTopics = true
                 }) {
                     Text("Next")
-                        .foregroundColor(.white)
+                        .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
+                        .foregroundColor(Color.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(selectedLanguage != nil ? Color.blue : Color.gray)
+                        .background(selectedLanguage.isEmpty ? Color.gray : Color.blue)
                         .cornerRadius(10)
                 }
                 .padding()
-                .disabled(selectedLanguage == nil)
-                
-                // NavigationLink to ChooseTopicView
-                NavigationLink(
-                    destination: ChooseTopicsView(selectedLanguage: selectedLanguage ?? "", isGuest: isGuest),
-                    isActive: $navigateToTopics
-                ) {
-                EmptyView()
+                .disabled(selectedLanguage.isEmpty)
+            }.navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
+                    }
                 }
-                .hidden()
+                
+                ToolbarItem(placement: .principal) {
+                    Text("Choose your Topics")
+                        .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
+                        .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
+                }
+            }.navigationDestination(isPresented: $navigateToTopics) {
+                ChooseTopicsView(isGuest: isGuest)
+                    .navigationBarBackButtonHidden(true)
+            }.alert("Language Save Failed", isPresented: $viewModel.showAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(viewModel.errorMessage)
             }
         }
+    }
 }
 
 // Preview

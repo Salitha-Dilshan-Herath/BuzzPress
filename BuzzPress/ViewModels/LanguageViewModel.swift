@@ -8,14 +8,17 @@
 import Foundation
 import FirebaseAuth
 
+@MainActor
 class LanguageViewModel: ObservableObject {
     @Published var allLanguages: [String] = []
     @Published var searchText = ""
-    @Published var selectedLanguage: String?
+    @Published var selectedLanguage: String = ""
+    @Published var errorMessage: String = ""
+    @Published var isLoading = false
+    @Published var showAlert = false
 
-    var filteredLanguages: [String] {
-        searchText.isEmpty ? allLanguages : allLanguages.filter { $0.lowercased().contains(searchText.lowercased()) }
-    }
+    private let repository: FirebaseRepositoryProtocol
+
 
     private let languageMap: [String: String] = [
         "ar": "Arabic", "de": "German", "en": "English", "es": "Spanish",
@@ -23,29 +26,37 @@ class LanguageViewModel: ObservableObject {
         "no": "Norwegian", "pt": "Portuguese", "ru": "Russian",
         "se": "Northern Sami", "ud": "Urdu", "zh": "Chinese"
     ]
+    
+    var sortedLanguages: [(code: String, name: String)] {
+        languageMap
+            .sorted { $0.value < $1.value }
+            .map { (code: $0.key, name: $0.value) }
+    }
+    
+    init(repository: FirebaseRepositoryProtocol = FirebaseRepository()) {
+        self.repository = repository
 
-    init() {
-        loadLanguages()
     }
 
-    func loadLanguages() {
-        allLanguages = languageMap.values.sorted()
-    }
-
-    func saveSelection(topics: [String]) {
-        guard let selectedLanguage = selectedLanguage else { return }
-        let selection = UserSelection(language: selectedLanguage, topics: topics)
-
-        if Auth.auth().currentUser != nil {
-            FirestoreService().saveSelectionForUser(selection)
-        } else {
-            UserDefaultsManager.saveGuestSelection(selection)
+    func saveSelection() async {
+        
+        do {
+            try await self.repository.saveUserProfile(data: ["language" : selectedLanguage])
+        }catch {
+            errorMessage = "Failed to save language: \(error.localizedDescription)"
+            showAlert = true 
         }
+//        let selection = UserSelection(language: selectedLanguage, topics: topic)
+//
+//        if Auth.auth().currentUser != nil {
+//            FirestoreService().saveSelectionForUser(selection)
+//        } else {
+//            UserDefaultsManager.saveGuestSelection(selection)
+//        }
     }
     
     func saveSelectionForGuest() {
-        guard let selected = selectedLanguage else { return }
-        UserDefaults.standard.set(selected, forKey: "guest_selected_language")
+        UserDefaults.standard.set(selectedLanguage, forKey: "guest_selected_language")
     }
 }
 

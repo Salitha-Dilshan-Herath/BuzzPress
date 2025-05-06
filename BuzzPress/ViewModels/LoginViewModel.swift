@@ -14,19 +14,19 @@ final class LoginViewModel: ObservableObject {
     @Published var password = ""
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
-    @Published private(set) var showSuccessAlert = false
+    @Published  var showAlert = false
     @Published private(set) var userSelection: UserSelection?
     
     // MARK: - Dependencies
-    private let firestoreService: FirestoreServiceProtocol
-    
+    private let repository: FirebaseRepository
+
     // MARK: - Initialization
-    init(firestoreService: FirestoreServiceProtocol = FirestoreService()) {
-        self.firestoreService = firestoreService
+    init(repository: FirebaseRepository = FirebaseRepository()) {
+        self.repository = repository
     }
     
     // MARK: - Public Methods
-    func login() async -> UserSelection? {
+    func loginWithEmail() async -> UserSelection? {
         guard validateInputs() else { return nil }
         
         isLoading = true
@@ -35,10 +35,25 @@ final class LoginViewModel: ObservableObject {
         
         do {
             try await performFirebaseLogin()
-            showSuccessAlert = true
-            return await fetchUserSelection()
+            return try await fetchUserSelection()
         } catch {
             handleError(error)
+            showAlert = true
+            return nil
+        }
+    }
+    
+    func loginWithGoogle () async -> UserSelection?  {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            try await performGoogleLogin()
+            return try await fetchUserSelection()
+        } catch {
+            handleError(error)
+            showAlert = true
             return nil
         }
     }
@@ -60,17 +75,18 @@ final class LoginViewModel: ObservableObject {
     
     private func performFirebaseLogin() async throws {
         
-        let user = try await firestoreService.loginWithEmail(withEmail: email, password: password)
+        _ = try await self.repository.loginWithEmail(withEmail: email, password: password)
 
     }
     
-    private func fetchUserSelection() async -> UserSelection? {
-        do {
-            return try await firestoreService.fetchSelectionForUser()
-        } catch {
-            errorMessage = "Failed to fetch user data"
-            return nil
-        }
+    private func performGoogleLogin() async throws {
+        
+        _ = try await self.repository.signInWithGoogle()
+
+    }
+    
+    private func fetchUserSelection() async throws -> UserSelection? {
+        return try await self.repository.fetchSelectionForUser()
     }
     
     private func handleError(_ error: Error) {

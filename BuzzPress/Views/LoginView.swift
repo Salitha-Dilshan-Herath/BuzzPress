@@ -10,11 +10,10 @@ import SwiftUI
 struct LoginView: View {
     
     @StateObject private var viewModel = LoginViewModel()
-    @State private var showAlert = false
     @State private var fetchedSelection: UserSelection?
     @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
     @AppStorage("selectedLanguage") private var selectedLanguage: String = ""
-    @AppStorage("selectedTopics") private var selectedTopics: String = ""
+    @AppStorage("selectedTopic") private var selectedTopics: String = ""
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -96,12 +95,10 @@ struct LoginView: View {
             
             Button(action: {
                 Task {
-                    if let userSelection = await viewModel.login() {
+                    if let userSelection = await viewModel.loginWithEmail() {
                         selectedLanguage = userSelection.language
-                        selectedTopics = userSelection.topics.joined(separator: ",")
+                        selectedTopics = userSelection.topic
                         isLoggedIn = true
-                    } else {
-                        showAlert = true
                     }
                 }
             }) {
@@ -155,7 +152,9 @@ struct LoginView: View {
                 }
                 
                 Button(action: {
-                    // Google login action
+                    Task {
+                        await viewModel.loginWithGoogle()
+                    }
                 }) {
                     HStack {
                         Image(Constants.ICON_GOOGLE)
@@ -180,9 +179,7 @@ struct LoginView: View {
                     .font(Font.custom(Constants.FONT_REGULAR, size: 14))
                     .foregroundColor(Color(Constants.BODY_TEXT_COLOR))
                 
-                NavigationLink {
-                    SignUpView()
-                } label: {
+                NavigationLink(destination: SignUpView()) {
                     Text("Sign Up")
                         .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 14))
                         .foregroundColor(Color(Constants.PRIMARY_COLOR))
@@ -194,7 +191,7 @@ struct LoginView: View {
             Spacer()
         }
         .padding()
-        .alert("Login Status", isPresented: $showAlert) {
+        .alert("Login Status", isPresented: $viewModel.showAlert) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(viewModel.errorMessage ?? "Login successful!")

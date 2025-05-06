@@ -8,27 +8,89 @@
 import Foundation
 import FirebaseAuth
 
+@MainActor
 class SignUpViewModel: ObservableObject {
     @Published var email = ""
     @Published var password = ""
     @Published var errorMessage: String?
     @Published var isLoading = false
-    @Published var showSuccessAlert = false
+    @Published var showAlert = false
+    @Published var navigateToLanguageView = false
+
+    // MARK: - Dependencies
+    private let repository: FirebaseRepository
+
+    // MARK: - Initialization
+    init(repository: FirebaseRepository = FirebaseRepository()) {
+        self.repository = repository
+    }
     
-    func signUp(completion: @escaping (Bool) -> Void) {
+    
+    func sigUpWithEmailAndPassword() async -> Bool {
+        guard validateInputs() else { return false }
+        
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
         
-        Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                if let error = error {
-                    self?.errorMessage = error.localizedDescription
-                    completion(false)
-                } else {
-                    completion(true)
-                }
-            }
+        do {
+            try await performFirebaseSignUp()
+            return true
+        } catch {
+            handleError(error)
+            showAlert = true
+            return false
         }
+    }
+    
+    func sigUpWithGoogle () async -> Bool  {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            try await performGoogleLogin()
+            return true
+
+        } catch {
+            handleError(error)
+            showAlert = true
+            return false
+        }
+    }
+    
+    private func performFirebaseSignUp() async throws {
+        
+        _ = try await self.repository.signupWithEmail(withEmail: email, password: password)
+
+    }
+    
+    private func performGoogleLogin() async throws {
+        
+        _ = try await self.repository.signInWithGoogle()
+
+    }
+    
+    private func handleError(_ error: Error) {
+        if let loginError = error as? LoginError {
+            errorMessage = loginError.localizedDescription
+        } else {
+            errorMessage = "An unexpected error occurred"
+        }
+    }
+    
+    // MARK: - Private Methods
+    private func validateInputs() -> Bool {
+        guard !email.isEmpty, !password.isEmpty else {
+            errorMessage = "Please enter both email and password"
+            return false
+        }
+        
+        guard email.contains("@") else {
+            errorMessage = "Please enter a valid email address"
+            return false
+        }
+        
+        return true
     }
 }

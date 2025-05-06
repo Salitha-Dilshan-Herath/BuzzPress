@@ -8,5 +8,19 @@
 		<string>Poppins-Regular.ttf</string>
 		<string>Poppins-SemiBold.ttf</string>
 	</array>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>com.googleusercontent.apps.207446049793-80k1bo4ntpa8a1hq72nre2sdml7mrfso</string>
+        </array>
+      </dict>
+    </array>
+    <key>GoogleSignIn</key>
+    <dict>
+      <key>HostedDomain</key>
+      <string></string>
+    </dict>
 </dict>
 </plist>

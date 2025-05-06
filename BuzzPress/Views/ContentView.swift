@@ -13,8 +13,8 @@ struct ContentView: View {
     @AppStorage("isFirstLaunch") private var isFirstLaunch: Bool = true
     @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
     @AppStorage("selectedLanguage") private var selectedLanguage: String = ""
-    @AppStorage("selectedTopics") private var selectedTopics: String = ""
-
+    @AppStorage("selectedTopic") private var selectedTopic: String = ""
+    
     
     var body: some View {
         if isFirstLaunch {
@@ -25,10 +25,13 @@ struct ContentView: View {
             if isLoggedIn {
                 MainTabView(
                     selectedLanguage: selectedLanguage,
-                    selectedTopics: selectedTopics
+                    selectedTopics: selectedTopic
                 )
             } else {
-                LoginView()
+                NavigationStack {
+                    LoginView()
+                }
+                
             }
         }
     }

@@ -7,5 +7,5 @@
 
 struct UserSelection: Codable {
     let language: String
-    let topics: [String]
+    let topic: String
 }

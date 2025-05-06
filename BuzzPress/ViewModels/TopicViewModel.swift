@@ -8,56 +8,50 @@
 import SwiftUI
 import FirebaseAuth
 
+@MainActor
 class TopicViewModel: ObservableObject {
     @Published var allTopics: [String] = [
         "National", "International", "Sport", "Lifestyle", "Business",
         "Health", "Fashion", "Technology", "Science", "Art", "Politics"
     ]
     
-    @Published var selectedTopics: Set<String> = []
+    @Published var selectedTopic: String = ""
     @Published var searchText: String = ""
+    @Published var errorMessage: String = ""
+    @Published var isLoading = false
+    @Published var showAlert = false
+    
+    private let repository: FirebaseRepositoryProtocol
     var isGuest: Bool = true
-
-        var selectionsAreSaved: Bool {
-            if isGuest {
-                return UserDefaults.standard.stringArray(forKey: "guest_selected_topics") != nil
-            } else {
-                // You might want to track Firestore save success with a flag
-                return firestoreSaveSuccessFlag
-            }
-        }
-
-        var firestoreSaveSuccessFlag = false
-
-    var filteredTopics: [String] {
-        if searchText.isEmpty {
-            return allTopics
-        } else {
-            return allTopics.filter { $0.localizedCaseInsensitiveContains(searchText) }
-        }
+    
+    init(repository: FirebaseRepositoryProtocol = FirebaseRepository()) {
+        self.repository = repository
+        
     }
-
-    func toggleSelection(for topic: String) {
-        if selectedTopics.contains(topic) {
-            selectedTopics.remove(topic)
-        } else {
-            selectedTopics.insert(topic)
+    
+    func saveSelection() async {
+        
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            try await self.repository.saveUserProfile(data: ["topic" : selectedTopic])
+        }catch {
+            errorMessage = "Failed to save Topic: \(error.localizedDescription)"
+            showAlert = true
         }
-    }
-
-    func saveTopics(for language: String) {
-        let selection = UserSelection(language: language, topics: Array(selectedTopics))
-
-        if Auth.auth().currentUser != nil {
-            FirestoreService().saveSelectionForUser(selection)
-        } else {
-            UserDefaultsManager.saveGuestSelection(selection)
-        }
+        //        let selection = UserSelection(language: selectedLanguage, topics: topic)
+        //
+        //        if Auth.auth().currentUser != nil {
+        //            FirestoreService().saveSelectionForUser(selection)
+        //        } else {
+        //            UserDefaultsManager.saveGuestSelection(selection)
+        //        }
     }
     
     func saveSelectionForGuest() {
-        let topics = Array(selectedTopics)
-        UserDefaults.standard.set(topics, forKey: "guest_selected_topics")
+        let topic = selectedTopic
+        UserDefaults.standard.set(topic, forKey: "guest_selected_topics")
     }
 }
 

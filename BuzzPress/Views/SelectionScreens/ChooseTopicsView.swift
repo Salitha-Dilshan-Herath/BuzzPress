@@ -8,76 +8,96 @@
 import SwiftUI
 
 struct ChooseTopicsView: View {
-    let selectedLanguage: String
+    let isGuest: Bool
+    
     @StateObject private var viewModel = TopicViewModel()
     @Environment(\.presentationMode) var presentationMode
-    @State private var navigateToOnboardingComplete = false
-    let isGuest: Bool
+    @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
+    @AppStorage("selectedTopic") private var selectedTopics: String = ""
 
     var body: some View {
-        VStack {
-            // Search bar
-            TextField("Search", text: $viewModel.searchText)
+        
+        NavigationStack{
+            VStack {
+                // Topic selection UI
+                WrapHStack(viewModel.allTopics, spacing: 10) { topic in
+                    Button(action: {
+                        selectedTopics = topic
+                    }) {
+                        Text(topic)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(selectedTopics == topic  ? Color.blue : Color.white)
+                            .foregroundColor(selectedTopics == topic ? .white : .blue)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.blue, lineWidth: 1)
+                            )
+                            .cornerRadius(8)
+                    }
+                }
                 .padding()
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal)
-
-            // Topic selection UI
-            WrapHStack(viewModel.filteredTopics, spacing: 10) { topic in
+                
+                Spacer()
                 Button(action: {
-                    viewModel.toggleSelection(for: topic)
-                }) {
-                    Text(topic)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(viewModel.selectedTopics.contains(topic) ? Color.blue : Color.white)
-                        .foregroundColor(viewModel.selectedTopics.contains(topic) ? .white : .blue)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.blue, lineWidth: 1)
-                        )
-                        .cornerRadius(8)
-                }
-            }
-            .padding()
-
-            Spacer()
-
-            // Next button
-            Button("Next") {
-                // Save the selected language and topics
-                if isGuest {
-                    viewModel.saveSelectionForGuest()
-                } else {
-                    // Save to Firestore
-                    let languageVM = LanguageViewModel()
-                    languageVM.selectedLanguage = selectedLanguage
-                    languageVM.saveSelection(topics: Array(viewModel.selectedTopics))
-                }
-                // Check if saving was successful
-                if viewModel.selectionsAreSaved {
-                    print("selectionsAreSaved = true")
-                    navigateToOnboardingComplete = true
                     
-                } else {
-                    print("selectionsAreSaved = false")
+                    Task {
+                        viewModel.selectedTopic = selectedTopics
+                        if isGuest {
+                            viewModel.saveSelectionForGuest()
+                        } else {
+                            await viewModel.saveSelection()
+                            isLoggedIn = true
+                        }
+                    }
+                }) {
+                    
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .tint(.white)
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        Text("Next")
+                            .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
+                            .foregroundColor(Color.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(selectedTopics.isEmpty ? Color.gray : Color.blue)
+                            .cornerRadius(10)
+                    }
                 }
-            }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(viewModel.selectedTopics.isEmpty ? Color.gray : Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-            .padding(.horizontal)
-            .disabled(viewModel.selectedTopics.isEmpty)
-
-            // Navigation Trigger
-            NavigationLink(destination: OnboardingCompleteView(), isActive: $navigateToOnboardingComplete) {
-                EmptyView()
-            }
+                .padding()
+                .disabled(selectedTopics.isEmpty)
+                
+            }.navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .principal) {
+                        Text("Choose your Topics")
+                            .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
+                            .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
+                    }
+                }
+        }.alert("Topic Save Failed", isPresented: $viewModel.showAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage)
         }
-        .navigationTitle("Choose your Topics")
-        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct ChooseTopicsView_Previews: PreviewProvider {
+    static var previews: some View {
+        ChooseTopicsView(isGuest: false)
     }
 }
 
