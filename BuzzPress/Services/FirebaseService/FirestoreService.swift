@@ -9,9 +9,8 @@ import FirebaseFirestore
 import FirebaseAuth
 
 protocol FirestoreServiceProtocol {
+    func loginWithEmail(withEmail: String, password: String) async throws -> User
     func fetchSelectionForUser() async throws -> UserSelection?
-    func fetchUserDetails() async throws -> UserProfile?
-//    func saveUserProfile() async throws
     func addComment(articleId: String, text: String) async throws
     func fetchComments(articleId: String) async throws -> [NewsComment]
     func toggleLike(articleId: String) async throws -> Bool
@@ -19,13 +18,29 @@ protocol FirestoreServiceProtocol {
     func fetchLikeAndCommentCount(articleId: String) async throws -> (likes: Int, comments: Int)
 }
 
-
+struct UserProfile: Codable {
+    var username: String
+    var fullName: String
+    var email: String
+}
 
 class FirestoreService : FirestoreServiceProtocol {
     
     private let db = Firestore.firestore()
+    private let auth: AuthProtocol = Auth.auth()
+
     
-    //To save the Language and Topic selection when signing in a new user
+    func loginWithEmail(withEmail: String, password: String) async throws -> User  {
+        
+        do {
+            let result = try await auth.signIn(withEmail: withEmail, password: password)
+            return result.user
+        } catch {
+
+            throw LoginError.mapFromFirebaseError(error)
+        }
+    }
+    
     func saveSelectionForUser(_ selection: UserSelection, completion: ((Error?) -> Void)? = nil) {
         guard let userId = Auth.auth().currentUser?.uid else {
             completion?(NSError(domain: "NoUser", code: 401, userInfo: nil))
@@ -33,7 +48,6 @@ class FirestoreService : FirestoreServiceProtocol {
         }
         
         let data: [String: Any] = [
-            "username": AuthHelper.currentUser?.email,
             "language": selection.language,
             "topics": selection.topics
         ]
@@ -65,52 +79,6 @@ class FirestoreService : FirestoreServiceProtocol {
         print("Selected Topics: \(topics)")
         
         return UserSelection(language: language, topics: topics)
-    }
-    
-    func fetchUserDetails() async throws -> UserProfile? {
-        guard let userUID = AuthHelper.currentUser?.uid else {
-            return nil
-        }
-        
-        let snapshot = try await db.collection("users").document(userUID).getDocument()
-        
-        guard let data = snapshot.data(),
-              let username = data["username"] as? String,
-              let fullName = data["fullName"] as? String,
-              let email = data["email"] as? String,
-              let language = data["language"] as? String,
-              let topic = data["topics"] as? [String] else {
-            print("##FiresroreService## fetchUserDetails : Failed")
-            return nil
-        }
-        
-        print("##FiresroreService## fetchUserDetails - username: \(username)")
-        print("##FiresroreService## fetchUserDetails - fullName: \(fullName)")
-        
-        return UserProfile(username: username, fullName: fullName, email: email, preferredLanguage: language)
-    }
-    
-    func updatedUserDetails(_ userDetailsUpdates: UserProfile, completion: ((Error?) -> Void)? = nil) {
-        guard let userUId = Auth.auth().currentUser?.uid else {
-            completion?(NSError(domain: "NoUser", code: 401, userInfo: nil))
-            return
-        }
-        
-        let data: [String: Any] = [
-            "username": userDetailsUpdates.username,
-            "fullName": userDetailsUpdates.fullName,
-            "email": userDetailsUpdates.email,
-            "language": userDetailsUpdates.preferredLanguage,
-//            "preferredTopics": userDetailsUpdates.preferredTopic
-        ]
-        
-        db.collection("users").document(userUId).setData(data, merge: true) { error in
-            if let error = error {
-                print("##FiresroreService## updatedUserDetails - Error saving to Firestore: \(error.localizedDescription)")
-            } else {
-                print("##FiresroreService## updatedUserDetails - Selection saved to Firestore")
-            }
-        }
     }
     
     func addComment(articleId: String, text: String) async throws {
@@ -147,16 +115,15 @@ class FirestoreService : FirestoreServiceProtocol {
                 throw NSError(domain: "InvalidCommentData", code: 400, userInfo: ["documentId": doc.documentID])
             }
             
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateStyle = .medium // e.g., "May 5, 2024"
-            dateFormatter.timeStyle = .none   // Exclude time
-            let dateString = dateFormatter.string(from: timestamp.dateValue())
+            let isoFormatter = ISO8601DateFormatter()
+            isoFormatter.formatOptions = [.withInternetDateTime] // You can customize this
+            let isoString = isoFormatter.string(from: timestamp.dateValue())
 
             return NewsComment(
                 userImage: "person.crop.circle",
                 name: (user.displayName ?? user.email) ?? "User",
                 comment: text,
-                timeAgo: Utility.publishedAgo(dateString))
+                timeAgo: Utility.publishedAgo(isoString))
         }
     }
     
@@ -196,5 +163,77 @@ class FirestoreService : FirestoreServiceProtocol {
         )
     }
     
+    
+    func fetchUserProfile(for uid: String, completion: @escaping (UserProfile?) -> Void) {
+//            guard let userId = Auth.auth().currentUser?.uid else {
+//                completion(nil)
+//                return
+//            }
+
+            db.collection("users").document(uid).getDocument { snapshot, error in
+                guard let data = snapshot?.data(), error == nil else {
+                    print("Failed to fetch user data: \(error?.localizedDescription ?? "Unknown error")")
+                    completion(nil)
+                    return
+                }
+
+                let username = data["username"] as? String ?? ""
+                let fullName = data["fullName"] as? String ?? ""
+                let email = data["email"] as? String ?? ""
+                completion(UserProfile(username: username, fullName: fullName, email: email))
+            }
+        }
+    
+    func saveUserProfile(_ profile: UserProfile, for uid: String) {
+//            guard let userId = Auth.auth().currentUser?.uid else { return }
+
+            let data: [String: Any] = [
+                "username": profile.username,
+                "fullName": profile.fullName,
+                "email": profile.email
+            ]
+
+        db.collection("users").document(uid).setData(data, merge: true)
+        }
 }
 
+
+
+// MARK: - Protocols for Dependency Injection
+protocol AuthProtocol {
+    func signIn(withEmail email: String, password: String) async throws -> AuthDataResult
+}
+
+extension Auth: AuthProtocol {}
+
+
+
+// MARK: - Error Handling
+enum LoginError: LocalizedError {
+    case invalidCredentials
+    case networkError
+    case unknownError
+    
+    var localizedDescription: String {
+        switch self {
+        case .invalidCredentials:
+            return "Invalid email or password"
+        case .networkError:
+            return "Network error. Please try again."
+        case .unknownError:
+            return "An unknown error occurred"
+        }
+    }
+    
+    static func mapFromFirebaseError(_ error: Error) -> LoginError {
+        let nsError = error as NSError
+        switch nsError.code {
+        case AuthErrorCode.wrongPassword.rawValue, AuthErrorCode.userNotFound.rawValue, AuthErrorCode.invalidCredential.rawValue:
+            return .invalidCredentials
+        case AuthErrorCode.networkError.rawValue:
+            return .networkError
+        default:
+            return .unknownError
+        }
+    }
+}

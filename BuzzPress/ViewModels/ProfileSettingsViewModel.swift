@@ -24,11 +24,11 @@ class ProfileSettingsViewModel: ObservableObject {
     @Published var selectedLanguageCode: String = "" // default
     
     @Published var availableTopics: [String] = [
-        "business", "entertainment", "general", "health",
-        "science", "sports", "technology"
+        "National", "International", "Sport", "Lifestyle", "Business",
+        "Health", "Fashion", "Technology", "Science", "Art", "Politics"
     ]
 
-    @Published var selectedTopic: String = ""
+    @Published var selectedTopics: [String] = []
 
     
     func loadUserDetails() {
@@ -49,7 +49,12 @@ class ProfileSettingsViewModel: ObservableObject {
     }
     
     func saveUserDetailsUpdates() {
-        let updatedProfile = UserProfile(username: username, fullName: fullName, email: email, preferredLanguage: selectedLanguageCode)
+        let updatedProfile = UserProfile(
+            username: username,
+            fullName: fullName,
+            email: email,
+            preferredLanguage: selectedLanguageCode,
+            preferredTopic: selectedTopics)
         
         firestoreService.updatedUserDetails(updatedProfile) { error in
             if let error = error {

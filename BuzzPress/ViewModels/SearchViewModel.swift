@@ -9,6 +9,7 @@ import Foundation
 
 import Combine
 import Foundation
+import SwiftUICore
 
 @MainActor
 class SearchViewModel: ObservableObject {

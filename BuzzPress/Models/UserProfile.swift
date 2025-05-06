@@ -10,5 +10,5 @@ struct UserProfile: Codable {
     var fullName: String
     var email: String
     var preferredLanguage: String
-    //var preferredTopic: [String]
+    var preferredTopic: [String]
 }
