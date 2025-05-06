@@ -5,7 +5,6 @@
 //  Created by Spemai on 2025-05-01.
 //
 
-import FirebaseAuth
 import Combine
 
 @MainActor
@@ -19,13 +18,10 @@ final class LoginViewModel: ObservableObject {
     @Published private(set) var userSelection: UserSelection?
     
     // MARK: - Dependencies
-    private let auth: AuthProtocol
     private let firestoreService: FirestoreServiceProtocol
     
     // MARK: - Initialization
-    init(auth: Auth = Auth.auth(),
-         firestoreService: FirestoreServiceProtocol = FirestoreService()) {
-        self.auth = auth
+    init(firestoreService: FirestoreServiceProtocol = FirestoreService()) {
         self.firestoreService = firestoreService
     }
     
@@ -63,11 +59,9 @@ final class LoginViewModel: ObservableObject {
     }
     
     private func performFirebaseLogin() async throws {
-        do {
-            _ = try await auth.signIn(withEmail: email, password: password)
-        } catch {
-            throw LoginError.mapFromFirebaseError(error)
-        }
+        
+        let user = try await firestoreService.loginWithEmail(withEmail: email, password: password)
+
     }
     
     private func fetchUserSelection() async -> UserSelection? {
@@ -88,41 +82,4 @@ final class LoginViewModel: ObservableObject {
     }
 }
 
-// MARK: - Protocols for Dependency Injection
-protocol AuthProtocol {
-    func signIn(withEmail email: String, password: String) async throws -> AuthDataResult
-}
 
-extension Auth: AuthProtocol {}
-
-
-
-// MARK: - Error Handling
-enum LoginError: LocalizedError {
-    case invalidCredentials
-    case networkError
-    case unknownError
-    
-    var localizedDescription: String {
-        switch self {
-        case .invalidCredentials:
-            return "Invalid email or password"
-        case .networkError:
-            return "Network error. Please try again."
-        case .unknownError:
-            return "An unknown error occurred"
-        }
-    }
-    
-    static func mapFromFirebaseError(_ error: Error) -> LoginError {
-        let nsError = error as NSError
-        switch nsError.code {
-        case AuthErrorCode.wrongPassword.rawValue, AuthErrorCode.userNotFound.rawValue, AuthErrorCode.invalidCredential.rawValue:
-            return .invalidCredentials
-        case AuthErrorCode.networkError.rawValue:
-            return .networkError
-        default:
-            return .unknownError
-        }
-    }
-}

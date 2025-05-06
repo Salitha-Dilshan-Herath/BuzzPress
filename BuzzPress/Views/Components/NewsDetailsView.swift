@@ -98,7 +98,7 @@ struct NewsDetailsView: View{
                     HStack(spacing: 0) {
                         // Left Content (3 parts, aligned left)
                         HStack(spacing: 15) { // Adjust spacing between like buttons
-                            // Like Button 1
+                           
                             HStack(spacing: 5) {
                                 Image(systemName: viewModel.isLiked ? "heart.fill" : "heart")
                                     .font(.system(size: 20))
@@ -114,7 +114,6 @@ struct NewsDetailsView: View{
                                 
                             }
                             
-                            // Like Button 2 (or any other left-aligned content)
                             HStack(spacing: 5) {
                                 Image(systemName: "ellipsis.bubble")
                                     .font(.system(size: 20))
@@ -129,9 +128,8 @@ struct NewsDetailsView: View{
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        // Right Content (2 parts, aligned right)
                         HStack {
-                            Spacer() // ← Push content to the right
+                            Spacer()
                             Button(action: {
                                 //isBookmarked.toggle()
                             }) {
