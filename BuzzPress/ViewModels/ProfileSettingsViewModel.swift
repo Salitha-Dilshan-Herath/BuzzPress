@@ -40,6 +40,7 @@ class ProfileSettingsViewModel: ObservableObject {
                         self.fullName = profile.fullName
                         self.email = profile.email
                         self.selectedLanguageCode = profile.preferredLanguage
+                        self.selectedTopics = profile.preferredTopic
                     }
                 }
             } catch {

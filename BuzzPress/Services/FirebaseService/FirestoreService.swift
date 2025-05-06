@@ -18,17 +18,11 @@ protocol FirestoreServiceProtocol {
     func fetchLikeAndCommentCount(articleId: String) async throws -> (likes: Int, comments: Int)
 }
 
-struct UserProfile: Codable {
-    var username: String
-    var fullName: String
-    var email: String
-}
-
 class FirestoreService : FirestoreServiceProtocol {
     
     private let db = Firestore.firestore()
     private let auth: AuthProtocol = Auth.auth()
-
+    
     
     func loginWithEmail(withEmail: String, password: String) async throws -> User  {
         
@@ -36,7 +30,7 @@ class FirestoreService : FirestoreServiceProtocol {
             let result = try await auth.signIn(withEmail: withEmail, password: password)
             return result.user
         } catch {
-
+            
             throw LoginError.mapFromFirebaseError(error)
         }
     }
@@ -103,7 +97,7 @@ class FirestoreService : FirestoreServiceProtocol {
         guard let user = Auth.auth().currentUser else {
             throw NSError(domain: "NoUser", code: 401)
         }
-
+        
         let snapshot = try await db.collection("articles").document(articleId).collection("comments")
             .order(by: "timestamp", descending: true)
             .getDocuments()
@@ -118,7 +112,7 @@ class FirestoreService : FirestoreServiceProtocol {
             let isoFormatter = ISO8601DateFormatter()
             isoFormatter.formatOptions = [.withInternetDateTime] // You can customize this
             let isoString = isoFormatter.string(from: timestamp.dateValue())
-
+            
             return NewsComment(
                 userImage: "person.crop.circle",
                 name: (user.displayName ?? user.email) ?? "User",
@@ -163,38 +157,54 @@ class FirestoreService : FirestoreServiceProtocol {
         )
     }
     
-    
-    func fetchUserProfile(for uid: String, completion: @escaping (UserProfile?) -> Void) {
-//            guard let userId = Auth.auth().currentUser?.uid else {
-//                completion(nil)
-//                return
-//            }
-
-            db.collection("users").document(uid).getDocument { snapshot, error in
-                guard let data = snapshot?.data(), error == nil else {
-                    print("Failed to fetch user data: \(error?.localizedDescription ?? "Unknown error")")
-                    completion(nil)
-                    return
-                }
-
-                let username = data["username"] as? String ?? ""
-                let fullName = data["fullName"] as? String ?? ""
-                let email = data["email"] as? String ?? ""
-                completion(UserProfile(username: username, fullName: fullName, email: email))
+    func updatedUserDetails(_ selection: UserProfile, completion: ((Error?) -> Void)? = nil) {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            completion?(NSError(domain: "NoUser", code: 401, userInfo: nil))
+            return
+        }
+        
+        let data: [String: Any] = [
+            "fullName": selection.fullName,
+            "email": selection.email,
+            "username": selection.username,
+            "language": selection.preferredLanguage,
+            "topics": selection.preferredTopic
+        ]
+        
+        db.collection("users").document(userId).setData(data, merge: true) { error in
+            if let error = error {
+                print("fetchUserDetails - Error saving to Firestore: \(error.localizedDescription)")
+            } else {
+                print("fetchUserDetails - Selection saved to Firestore")
             }
         }
+    }
     
-    func saveUserProfile(_ profile: UserProfile, for uid: String) {
-//            guard let userId = Auth.auth().currentUser?.uid else { return }
-
-            let data: [String: Any] = [
-                "username": profile.username,
-                "fullName": profile.fullName,
-                "email": profile.email
-            ]
-
-        db.collection("users").document(uid).setData(data, merge: true)
+    func fetchUserDetails() async throws -> UserProfile? {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            return nil
         }
+        
+        let snapshot = try await db.collection("users").document(userId).getDocument()
+        
+        guard let data = snapshot.data(),
+              let fullName = data["fullName"] as? String,
+              let email = data["email"] as? String,
+              let username = data["username"] as? String,
+              let language = data["language"] as? String,
+              let topics = data["topics"] as? [String] else {
+            print("Failed to parse user selection data")
+            return nil
+        }
+        
+        print("Selected Language: \(language)")
+        print("Selected Topics: \(topics)")
+        
+        return UserProfile(username: username, fullName: fullName, email: email, preferredLanguage: language, preferredTopic: topics)
+    }
+    
+    
+    
 }
 
 
