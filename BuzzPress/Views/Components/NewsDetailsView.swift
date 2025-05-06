@@ -12,6 +12,7 @@ struct NewsDetailsView: View{
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var viewModel: NewsDetailViewModel
     @State private var isShowingComments = false
+    @State private var isBookmarked = false
 
     init(article: Article) {
         self.article = article
@@ -129,16 +130,28 @@ struct NewsDetailsView: View{
                         .frame(maxWidth: .infinity, alignment: .leading)
                         
                         HStack {
-                            Spacer()
-                            Button(action: {
-                                //isBookmarked.toggle()
-                            }) {
-                                Image(systemName: true ? "bookmark.fill" : "bookmark")
-                                    .foregroundColor(.blue)
-                                    .font(.system(size: 24))
+                                Spacer()
+                                Button(action: {
+                                    Task {
+                                        if isBookmarked {
+                                            await CoreDataService.shared.removeBookmark(withURL: article.url)
+                                        } else {
+                                            await CoreDataService.shared.saveBookmark(article)
+                                        }
+                                        isBookmarked.toggle()
+                                    }
+                                }) {
+                                    Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                                        .foregroundColor(.blue)
+                                        .font(.system(size: 24))
+                                }
                             }
-                        }
-                        .frame(maxWidth: .infinity)
+                            .frame(maxWidth: .infinity)
+                            .onAppear {
+                                Task {
+                                    isBookmarked = await CoreDataService.shared.isBookmarked(url: article.url)
+                                }
+                            }
                     }
                     .frame(minWidth: 0, maxWidth: .infinity)
                     .fixedSize(horizontal: false, vertical: true)

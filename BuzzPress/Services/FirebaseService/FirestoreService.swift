@@ -247,6 +247,61 @@ class FirestoreService : FirestoreServiceProtocol {
         }
     }
     
+    func fetchUserDetails() async throws -> UserProfile? {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            return nil
+        }
+        
+        let snapshot = try await db.collection("users").document(userId).getDocument()
+        
+        guard let data = snapshot.data(),
+              let fullName = data["fullName"] as? String,
+              let email = data["email"] as? String,
+              let username = data["username"] as? String,
+              let language = data["language"] as? String,
+              let topics = data["topics"] as? [String] else {
+            print("Failed to parse user selection data")
+            return nil
+        }
+        
+        print("Selected Language: \(language)")
+        print("Selected Topics: \(topics)")
+        
+        return UserProfile(username: username, fullName: fullName, email: email, preferredLanguage: language, preferredTopic: topics)
+    }
+    
+    
+    
+}
+
+
+
+// MARK: - Protocols for Dependency Injection
+protocol AuthProtocol {
+    func signIn(withEmail email: String, password: String) async throws -> AuthDataResult
+}
+
+extension Auth: AuthProtocol {}
+
+
+
+// MARK: - Error Handling
+enum LoginError: LocalizedError {
+    case invalidCredentials
+    case networkError
+    case unknownError
+    
+    var localizedDescription: String {
+        switch self {
+        case .invalidCredentials:
+            return "Invalid email or password"
+        case .networkError:
+            return "Network error. Please try again."
+        case .unknownError:
+            return "An unknown error occurred"
+        }
+    }
+    
     func saveUserProfile(_ profile: UserProfile, for uid: String) {
         //            guard let userId = Auth.auth().currentUser?.uid else { return }
         
