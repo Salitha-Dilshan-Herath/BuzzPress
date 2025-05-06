@@ -9,4 +9,6 @@ struct UserProfile: Codable {
     var username: String
     var fullName: String
     var email: String
+    var preferredLanguage: String
+    var preferredTopic: String
 }

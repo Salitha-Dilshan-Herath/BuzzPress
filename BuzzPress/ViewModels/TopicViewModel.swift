@@ -40,18 +40,10 @@ class TopicViewModel: ObservableObject {
             errorMessage = "Failed to save Topic: \(error.localizedDescription)"
             showAlert = true
         }
-        //        let selection = UserSelection(language: selectedLanguage, topics: topic)
-        //
-        //        if Auth.auth().currentUser != nil {
-        //            FirestoreService().saveSelectionForUser(selection)
-        //        } else {
-        //            UserDefaultsManager.saveGuestSelection(selection)
-        //        }
     }
     
     func saveSelectionForGuest() {
-        let topic = selectedTopic
-        UserDefaults.standard.set(topic, forKey: "guest_selected_topics")
+        UserDefaults.standard.set(selectedTopic, forKey: "guest_selected_topics")
     }
 }
 

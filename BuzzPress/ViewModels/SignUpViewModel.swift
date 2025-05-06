@@ -67,7 +67,14 @@ class SignUpViewModel: ObservableObject {
     
     private func performGoogleLogin() async throws {
         
-        _ = try await self.repository.signInWithGoogle()
+        let user = try await self.repository.signInWithGoogle()
+        let data: [String: Any] = [
+            "email": user.email ?? "",
+            "fullName": user.displayName ?? "",
+            "username": user.displayName?.replacingOccurrences(of: " ", with: "").lowercased() ?? "",
+            "provider": "google"
+        ]
+        try await self.repository.saveUserProfile(data: data)
 
     }
     

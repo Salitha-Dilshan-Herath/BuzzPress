@@ -14,7 +14,8 @@ struct ContentView: View {
     @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
     @AppStorage("selectedLanguage") private var selectedLanguage: String = ""
     @AppStorage("selectedTopic") private var selectedTopic: String = ""
-    
+    @AppStorage("isGuestUser") private var isGuestUser: Bool = false
+
     
     var body: some View {
         if isFirstLaunch {

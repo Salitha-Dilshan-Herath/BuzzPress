@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseAuth
 
+@MainActor
 class ProfileSettingsViewModel: ObservableObject {
     @Published var username = ""
     @Published var fullName = ""
@@ -28,24 +29,20 @@ class ProfileSettingsViewModel: ObservableObject {
         "Health", "Fashion", "Technology", "Science", "Art", "Politics"
     ]
 
-    @Published var selectedTopics: [String] = []
+    @Published var selectedTopic: String = ""
 
     
-    func loadUserDetails() {
-        Task {
-            do {
-                if let profile = try await firestoreService.fetchUserDetails() {
-                    DispatchQueue.main.async {
-                        self.username = profile.username
-                        self.fullName = profile.fullName
-                        self.email = profile.email
-                        self.selectedLanguageCode = profile.preferredLanguage
-                        self.selectedTopics = profile.preferredTopic
-                    }
-                }
-            } catch {
-                print("##ProfileSettingsViewModel## Failed to load user details: \(error.localizedDescription)")
+    func loadUserDetails() async {
+        do {
+            if let profile = try await firestoreService.fetchUserDetails() {
+                self.username = profile.username
+                self.fullName = profile.fullName
+                self.email = profile.email
+                self.selectedLanguageCode = profile.preferredLanguage
+                self.selectedTopic = profile.preferredTopic
             }
+        } catch {
+            print("##ProfileSettingsViewModel## Failed to load user details: \(error.localizedDescription)")
         }
     }
     
@@ -55,15 +52,16 @@ class ProfileSettingsViewModel: ObservableObject {
             fullName: fullName,
             email: email,
             preferredLanguage: selectedLanguageCode,
-            preferredTopic: selectedTopics)
+            preferredTopic: selectedTopic)
         
-        firestoreService.updatedUserDetails(updatedProfile) { error in
-            if let error = error {
-                print("##ProfileSettingsViewModel## Failed to update user details: \(error.localizedDescription)")
-            } else {
-                print("##ProfileSettingsViewModel## Successfully updated user details.")
-            }
-        }
+        
+//        firestoreService.updatedUserDetails(updatedProfile) { error in
+//            if let error = error {
+//                print("##ProfileSettingsViewModel## Failed to update user details: \(error.localizedDescription)")
+//            } else {
+//                print("##ProfileSettingsViewModel## Successfully updated user details.")
+//            }
+//        }
     }
 
 }

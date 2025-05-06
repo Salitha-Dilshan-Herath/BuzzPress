@@ -11,10 +11,12 @@ struct LoginView: View {
     
     @StateObject private var viewModel = LoginViewModel()
     @State private var fetchedSelection: UserSelection?
+    @State private var navigateToLanguageSelection = false
     @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
     @AppStorage("selectedLanguage") private var selectedLanguage: String = ""
     @AppStorage("selectedTopic") private var selectedTopics: String = ""
-    
+    @AppStorage("isGuestUser") private var isGuestUser: Bool = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             // Header
@@ -118,9 +120,6 @@ struct LoginView: View {
                 }
                 
             }
-            
-            
-            
             // Or continue with
             HStack {
                 VStack { Divider() }
@@ -133,7 +132,8 @@ struct LoginView: View {
             // Guest and Google login
             HStack(spacing: 20) {
                 Button(action: {
-                    // Guest login action
+                    isGuestUser = true
+                    navigateToLanguageSelection = true
                 }) {
                     HStack {
                         Image(systemName: "person.crop.circle")
@@ -195,6 +195,9 @@ struct LoginView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(viewModel.errorMessage ?? "Login successful!")
+        }.navigationDestination(isPresented: $navigateToLanguageSelection) {
+            SelectLanguageView(isGuest: true)
+                .navigationBarBackButtonHidden(true)
         }
     }
     

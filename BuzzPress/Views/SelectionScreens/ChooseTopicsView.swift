@@ -45,6 +45,7 @@ struct ChooseTopicsView: View {
                         viewModel.selectedTopic = selectedTopics
                         if isGuest {
                             viewModel.saveSelectionForGuest()
+                            isLoggedIn = true
                         } else {
                             await viewModel.saveSelection()
                             isLoggedIn = true

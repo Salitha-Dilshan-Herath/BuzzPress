@@ -22,7 +22,6 @@ protocol FirestoreServiceProtocol {
     func toggleLike(articleId: String) async throws -> Bool
     func isArticleLiked(articleId: String) async throws -> Bool
     func fetchLikeAndCommentCount(articleId: String) async throws -> (likes: Int, comments: Int)
-    func saveUserDataAfterGoogleSignIn(user: User) async throws
     func saveUserProfile(data: [String: Any]) async throws
 }
 
@@ -81,8 +80,6 @@ class FirestoreService : FirestoreServiceProtocol {
         
         let authResult = try await Auth.auth().signIn(with: credential)
         
-        try await saveUserDataAfterGoogleSignIn(user: authResult.user)
-        
         return authResult.user
     }
     
@@ -92,40 +89,6 @@ class FirestoreService : FirestoreServiceProtocol {
         }
         let userRef = db.collection("users").document(userId)
         try await userRef.setData(data, merge: true)
-    }
-    
-    func saveUserDataAfterGoogleSignIn(user: User) async throws {
-        let userRef = db.collection("users").document(user.uid)
-        
-        let data: [String: Any] = [
-            "email": user.email ?? "",
-            "fullName": user.displayName ?? "",
-            "username": user.displayName?.replacingOccurrences(of: " ", with: "").lowercased() ?? "",
-            "provider": "google"
-        ]
-        
-        try await userRef.setData(data, merge: true)
-    }
-    
-    
-    func saveSelectionForUser(_ selection: UserSelection, completion: ((Error?) -> Void)? = nil) {
-        guard let userId = Auth.auth().currentUser?.uid else {
-            completion?(NSError(domain: "NoUser", code: 401, userInfo: nil))
-            return
-        }
-        
-        let data: [String: Any] = [
-            "language": selection.language,
-            "topics": selection.topic
-        ]
-        
-        db.collection("users").document(userId).setData(data, merge: true) { error in
-            if let error = error {
-                print("Error saving to Firestore: \(error.localizedDescription)")
-            } else {
-                print("Selection saved to Firestore")
-            }
-        }
     }
     
     func fetchSelectionForUser() async throws -> UserSelection? {
@@ -231,22 +194,6 @@ class FirestoreService : FirestoreServiceProtocol {
     }
     
     
-    func fetchUserProfile(for uid: String, completion: @escaping (UserProfile?) -> Void) {
-        
-        db.collection("users").document(uid).getDocument { snapshot, error in
-            guard let data = snapshot?.data(), error == nil else {
-                print("Failed to fetch user data: \(error?.localizedDescription ?? "Unknown error")")
-                completion(nil)
-                return
-            }
-            
-            let username = data["username"] as? String ?? ""
-            let fullName = data["fullName"] as? String ?? ""
-            let email = data["email"] as? String ?? ""
-            completion(UserProfile(username: username, fullName: fullName, email: email))
-        }
-    }
-    
     func fetchUserDetails() async throws -> UserProfile? {
         guard let userId = Auth.auth().currentUser?.uid else {
             return nil
@@ -259,58 +206,15 @@ class FirestoreService : FirestoreServiceProtocol {
               let email = data["email"] as? String,
               let username = data["username"] as? String,
               let language = data["language"] as? String,
-              let topics = data["topics"] as? [String] else {
+              let topic = data["topic"] as? String else {
             print("Failed to parse user selection data")
             return nil
         }
         
         print("Selected Language: \(language)")
-        print("Selected Topics: \(topics)")
+        print("Selected Topic: \(topic)")
         
-        return UserProfile(username: username, fullName: fullName, email: email, preferredLanguage: language, preferredTopic: topics)
+        return UserProfile(username: username, fullName: fullName, email: email, preferredLanguage: language, preferredTopic: topic)
     }
     
-    
-    
-}
-
-
-
-// MARK: - Protocols for Dependency Injection
-protocol AuthProtocol {
-    func signIn(withEmail email: String, password: String) async throws -> AuthDataResult
-}
-
-extension Auth: AuthProtocol {}
-
-
-
-// MARK: - Error Handling
-enum LoginError: LocalizedError {
-    case invalidCredentials
-    case networkError
-    case unknownError
-    
-    var localizedDescription: String {
-        switch self {
-        case .invalidCredentials:
-            return "Invalid email or password"
-        case .networkError:
-            return "Network error. Please try again."
-        case .unknownError:
-            return "An unknown error occurred"
-        }
-    }
-    
-    func saveUserProfile(_ profile: UserProfile, for uid: String) {
-        //            guard let userId = Auth.auth().currentUser?.uid else { return }
-        
-        let data: [String: Any] = [
-            "username": profile.username,
-            "fullName": profile.fullName,
-            "email": profile.email
-        ]
-        
-        db.collection("users").document(uid).setData(data, merge: true)
-    }
 }

@@ -46,13 +46,7 @@ class LanguageViewModel: ObservableObject {
             errorMessage = "Failed to save language: \(error.localizedDescription)"
             showAlert = true 
         }
-//        let selection = UserSelection(language: selectedLanguage, topics: topic)
-//
-//        if Auth.auth().currentUser != nil {
-//            FirestoreService().saveSelectionForUser(selection)
-//        } else {
-//            UserDefaultsManager.saveGuestSelection(selection)
-//        }
+
     }
     
     func saveSelectionForGuest() {
