@@ -15,5 +15,4 @@ extension CachedNews{
         
         return try? JSONDecoder().decode(NewsResponse.self, from: data)
     }
-    
 }

@@ -8,5 +8,5 @@
 struct APIConstants {
     
     static let baseURLString = "newsapi.org"
-    static let apiKey = "496d1750621543f29cbc3367f63fbbf3"
+    static let apiKey = "3e705d1bb5ae4a7fb26d1fedd6f9e85a"
 }

@@ -153,7 +153,11 @@ struct LoginView: View {
                 
                 Button(action: {
                     Task {
-                        await viewModel.loginWithGoogle()
+                        if let userSelection = await viewModel.loginWithGoogle() {
+                            selectedLanguage = userSelection.language
+                            selectedTopics = userSelection.topic
+                            isLoggedIn = true
+                        }
                     }
                 }) {
                     HStack {

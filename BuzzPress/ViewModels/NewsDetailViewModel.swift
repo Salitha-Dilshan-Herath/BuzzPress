@@ -11,16 +11,18 @@ import Foundation
 class NewsDetailViewModel: ObservableObject {
     
     @Published var isLiked: Bool = false
+    @Published var isBookmaked: Bool = false
+
     @Published var likeCount: Int = 0
     @Published var commentCount: Int = 0
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
     private let repository: FirebaseRepositoryProtocol
-    private let articleId: String
+    private let article: Article
 
-    init(articleId: String, repository: FirebaseRepositoryProtocol = FirebaseRepository()) {
-        self.articleId = articleId
+    init(article: Article, repository: FirebaseRepositoryProtocol = FirebaseRepository()) {
+        self.article = article
         self.repository = repository
     }
 
@@ -29,10 +31,13 @@ class NewsDetailViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            async let isLikedResult = repository.isArticleLiked(articleId: articleId)
-            async let countsResult = repository.fetchLikeAndCommentCount(articleId: articleId)
+            async let isLikedResult = repository.isArticleLiked(articleId: article.id)
+            async let countsResult = repository.fetchLikeAndCommentCount(articleId: article.id)
+            async let isArticleBookmarked = repository.isArticleBookmarked(articleId: article.id)
 
             self.isLiked = try await isLikedResult
+            self.isBookmaked = try await isArticleBookmarked
+
             let counts = try await countsResult
             self.likeCount = counts.likes
             self.commentCount = counts.comments
@@ -43,11 +48,24 @@ class NewsDetailViewModel: ObservableObject {
 
     func toggleLike() async {
         do {
-            let newStatus = try await repository.toggleLike(articleId: articleId)
+            let newStatus = try await repository.toggleLike(articleId: article.id)
             isLiked = newStatus
             likeCount += newStatus ? 1 : -1
         } catch {
             errorMessage = "Error toggling like: \(error.localizedDescription)"
+        }
+    }
+    
+    func toggleBookMark() async {
+        do {
+            if isBookmaked {
+                try await repository.removeBookmark(articleId: article.id)
+            }else{
+                try await repository.bookmarkArticle(article: article)
+            }
+            isBookmaked.toggle()
+        } catch {
+            errorMessage = "Error toggling bookmark: \(error.localizedDescription)"
         }
     }
 }

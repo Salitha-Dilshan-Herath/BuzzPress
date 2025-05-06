@@ -19,7 +19,7 @@ struct NewsDetailsView: View{
 
     init(article: Article) {
         self.article = article
-        _viewModel = StateObject(wrappedValue: NewsDetailViewModel(articleId: article.id))
+        _viewModel = StateObject(wrappedValue: NewsDetailViewModel(article: article))
     }
     
     
@@ -154,25 +154,15 @@ struct NewsDetailsView: View{
                                     
                                     Task {
                                         
-                                        if isBookmarked {
-                                            await CoreDataService.shared.removeBookmark(withURL: article.url)
-                                        } else {
-                                            await CoreDataService.shared.saveBookmark(article)
-                                        }
-                                        isBookmarked.toggle()
+                                        await viewModel.toggleBookMark()
                                     }
                                 }) {
-                                    Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                                    Image(systemName: viewModel.isBookmaked ? "bookmark.fill" : "bookmark")
                                         .foregroundColor(.blue)
                                         .font(.system(size: 24))
                                 }
                             }
                             .frame(maxWidth: .infinity)
-                            .onAppear {
-                                Task {
-                                    isBookmarked = await CoreDataService.shared.isBookmarked(url: article.url)
-                                }
-                            }
                         }
                         .frame(minWidth: 0, maxWidth: .infinity)
                         .fixedSize(horizontal: false, vertical: true)

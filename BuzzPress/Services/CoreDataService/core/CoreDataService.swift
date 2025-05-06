@@ -71,7 +71,6 @@ actor CoreDataService: CoreDataServiceProtocol {
             
             do {
                 let result = try context.fetch(request).first
-                print("dev test: \(result?.expireTime)")
                 return result
             } catch {
                 print("Failed to fetch cached news: \(error)")
@@ -79,63 +78,6 @@ actor CoreDataService: CoreDataServiceProtocol {
             }
         }
     }
-    
-    func saveBookmark(_ article: Article) async {
-        await performContextOperation{ context in
-            let bookmark = BookmarkedNews(context: context)
-            bookmark.title = article.title
-            bookmark.url = article.url
-            bookmark.publishedAt = article.publishedAt
-            bookmark.source = article.source.name
-            bookmark.imageURL = article.urlToImage
-        
-            do{
-                try context.save()
-                print("##CoreDataService## saveBookmark: Bookmark saved")
-            } catch {
-                print("##CoreDataService## saveBookmard: Failed to save bookmark - \(error)")
-            }
-        }
-    }
-    
-    func fetchBookmarks() async -> [BookmarkedNews] {
-        await performContextOperation { context in
-            let request: NSFetchRequest<BookmarkedNews> = BookmarkedNews.fetchRequest()
-            request.sortDescriptors = [NSSortDescriptor(key: "publishedAt", ascending: false)]
-            do {
-                return try context.fetch(request)
-            } catch {
-                print("##CoreDataService## fetchBookmarks: Failed to fetch bookmarks: \(error)")
-                return []
-            }
-        }
-    }
-    
-    func removeBookmark(withURL url: String) async {
-        await performContextOperation { context in
-            let request: NSFetchRequest<BookmarkedNews> = BookmarkedNews.fetchRequest()
-            request.predicate = NSPredicate(format: "url == %@", url)
-            request.fetchLimit = 1
-            do {
-                if let bookmark = try context.fetch(request).first {
-                    context.delete(bookmark)
-                    try context.save()
-                }
-            } catch {
-                print("Failed to remove bookmark: \(error)")
-            }
-        }
-    }
-    
-    func isBookmarked(url: String) async -> Bool {
-        await performContextOperation { context in
-            let request: NSFetchRequest<BookmarkedNews> = BookmarkedNews.fetchRequest()
-            request.predicate = NSPredicate(format: "url == %@", url)
-            return (try? context.count(for: request)) ?? 0 > 0
-        }
-        return false
-    }
-    
     
     func invalidateCache(withPrefix prefix: String) async {
         await performContextOperation { context in

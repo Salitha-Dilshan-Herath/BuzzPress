@@ -15,7 +15,7 @@ protocol FirestoreServiceProtocol {
     func loginWithEmail(withEmail: String, password: String) async throws -> User
     func signInWithGoogle() async throws -> User
     func signupWithEmail(withEmail: String, password: String) async throws -> User
-
+    
     func fetchSelectionForUser() async throws -> UserSelection?
     func addComment(articleId: String, text: String) async throws
     func fetchComments(articleId: String) async throws -> [NewsComment]
@@ -23,6 +23,11 @@ protocol FirestoreServiceProtocol {
     func isArticleLiked(articleId: String) async throws -> Bool
     func fetchLikeAndCommentCount(articleId: String) async throws -> (likes: Int, comments: Int)
     func saveUserProfile(data: [String: Any]) async throws
+    
+    func bookmarkArticle(article: Article) async throws
+    func removeBookmark(articleId: String) async throws
+    func isArticleBookmarked(articleId: String) async throws -> Bool
+    func fetchBookmarkedArticles() async throws -> [Article]
 }
 
 
@@ -100,7 +105,7 @@ class FirestoreService : FirestoreServiceProtocol {
         
         guard let data = snapshot.data(),
               let language = data["language"] as? String,
-              let topic = data["topics"] as? String else {
+              let topic = data["topic"] as? String else {
             print("Failed to parse user selection data")
             throw LoginError.userNotRegister
         }
@@ -217,4 +222,75 @@ class FirestoreService : FirestoreServiceProtocol {
         return UserProfile(username: username, fullName: fullName, email: email, preferredLanguage: language, preferredTopic: topic)
     }
     
+    func bookmarkArticle(article: Article) async throws {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            throw NSError(domain: "NoUser", code: 401)
+        }
+        
+        let userRef = db.collection("users").document(userId)
+        let bookmarksRef = userRef.collection("bookmarks").document(article.id)
+        
+        // Convert article to dictionary
+        let articleData: [String: Any] = [
+            "id": article.id,
+            "title": article.title,
+            "description": article.description ?? "",
+            "url": article.url,
+            "urlToImage": article.urlToImage ?? "",
+            "publishedAt": article.publishedAt,
+            "sourceName": article.source.name,
+            "content": article.content ?? "",
+            "author": article.author ?? "",
+            "savedAt": FieldValue.serverTimestamp()
+        ]
+        
+        try await bookmarksRef.setData(articleData)
+    }
+    
+    func removeBookmark(articleId: String) async throws {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            throw NSError(domain: "NoUser", code: 401)
+        }
+        
+        let userRef = db.collection("users").document(userId)
+        let bookmarkRef = userRef.collection("bookmarks").document(articleId)
+        
+        try await bookmarkRef.delete()
+    }
+    
+    func isArticleBookmarked(articleId: String) async throws -> Bool {
+        guard let userId = Auth.auth().currentUser?.uid else { return false }
+        
+        let userRef = db.collection("users").document(userId)
+        let bookmarkRef = userRef.collection("bookmarks").document(articleId)
+        
+        let snapshot = try await bookmarkRef.getDocument()
+        return snapshot.exists
+    }
+    
+    func fetchBookmarkedArticles() async throws -> [Article] {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            throw NSError(domain: "NoUser", code: 401)
+        }
+        
+        let snapshot = try await db.collection("users")
+            .document(userId)
+            .collection("bookmarks")
+            .order(by: "savedAt", descending: true)
+            .getDocuments()
+        
+        return snapshot.documents.compactMap { document in
+            let data = document.data()
+            return Article(
+                source: Source(id: nil, name: data["sourceName"] as? String ?? ""),
+                author: data["author"] as? String,
+                title: data["title"] as? String ?? "",
+                description: data["description"] as? String,
+                url: data["url"] as? String ?? "",
+                urlToImage: data["urlToImage"] as? String,
+                publishedAt: data["publishedAt"] as? String ?? "",
+                content: data["content"] as? String
+            )
+        }
+    }
 }

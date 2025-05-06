@@ -7,29 +7,38 @@
 
 import Foundation
 
+@MainActor
 class BookmarkViewModel: ObservableObject {
-    @Published var bookmarks: [BookmarkedNews] = []
     @Published var bookmarkedArticles: [Article] = []
+    @Published var errorMessage: String?
+    @Published var isLoading: Bool = false
+    @Published var searchText: String = ""
+
+    private let repository: FirebaseRepositoryProtocol
     
-    private let coreDataService: CoreDataService
-        
-    
-    
-    init(coreDataService: CoreDataService = CoreDataService.shared) async {
-            self.coreDataService = coreDataService
-        await loadBookmarks()
-        }
+    init(repository: FirebaseRepositoryProtocol = FirebaseRepository()) {
+        self.repository = repository
+    }
         
     func loadBookmarks() async {
-        let bookmarks = await coreDataService.fetchBookmarks()
-            //bookmarkedArticles = bookmarks.map { $0.toArticle() }
-        }
+        
+        isLoading = true
+        defer { isLoading = false }
 
-    func removeBookmark(url: String) {
-        Task {
-            await CoreDataService.shared.removeBookmark(withURL: url)
-            await loadBookmarks()
+        do {
+            async let bookmarkResult = repository.fetchBookmarkedArticles()
+            self.bookmarkedArticles = try await bookmarkResult
+            
+        } catch {
+            errorMessage = "Failed to load data: \(error.localizedDescription)"
         }
+    }
+
+    func removeBookmark(id: String) {
+//        Task {
+//            await CoreDataService.shared.removeBookmark(id: id)
+//            await loadBookmarks()
+//        }
     }
 }
 

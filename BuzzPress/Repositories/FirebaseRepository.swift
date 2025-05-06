@@ -25,10 +25,14 @@ protocol FirebaseRepositoryProtocol {
     func fetchLikeAndCommentCount(articleId: String) async throws -> (likes: Int, comments: Int)
     func saveUserProfile(data: [String: Any]) async throws
 
+    func bookmarkArticle(article: Article) async throws
+    func removeBookmark(articleId: String) async throws
+    func isArticleBookmarked(articleId: String) async throws -> Bool
+    func fetchBookmarkedArticles() async throws -> [Article]
 }
 
 class FirebaseRepository: FirebaseRepositoryProtocol {
-  
+    
     private let firestoreService: FirestoreServiceProtocol
     
     init(firestoreService: FirestoreServiceProtocol = FirestoreService()) {
@@ -73,5 +77,21 @@ class FirebaseRepository: FirebaseRepositoryProtocol {
     
     func fetchLikeAndCommentCount(articleId: String) async throws -> (likes: Int, comments: Int) {
         return try await firestoreService.fetchLikeAndCommentCount(articleId: articleId)
+    }
+    
+    func bookmarkArticle(article: Article) async throws {
+        return try await firestoreService.bookmarkArticle(article: article)
+    }
+    
+    func removeBookmark(articleId: String) async throws {
+        return try await firestoreService.removeBookmark(articleId: articleId)
+    }
+    
+    func isArticleBookmarked(articleId: String) async throws -> Bool {
+        return try await firestoreService.isArticleBookmarked(articleId: articleId)
+    }
+    
+    func fetchBookmarkedArticles() async throws -> [Article] {
+        return try await firestoreService.fetchBookmarkedArticles()
     }
 }
