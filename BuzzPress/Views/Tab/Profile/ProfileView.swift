@@ -75,14 +75,9 @@ struct ProfileView: View {
                     }
 
                     //Colour is not getting applied
-                    NavigationLink(destination: Text("Help Section")) {
-                        HStack {
-                            Image(systemName: "questionmark.circle")
-                            Text("Help")
-                        }
-                        .foregroundColor(.black)
+                    NavigationLink(destination: HelpView()) {
+                        Label("Help & Support", systemImage: "questionmark.circle")
                     }
-                    .buttonStyle(.plain)
                     
                     Button(action: {
                         try? Auth.auth().signOut()
