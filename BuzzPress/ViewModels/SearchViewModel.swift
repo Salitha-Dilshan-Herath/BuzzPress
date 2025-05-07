@@ -15,14 +15,16 @@ import SwiftUICore
 class SearchViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var filteredArticles: [Article] = []
+    @Published var selectedLanguage: String = ""
 
     private var searchCancellable: AnyCancellable?
     private let repository: NewsRepository
     private var currentPage = 1
     private var selectedCategory = Constants.CATEGORIES[0]
 
-    init(repository: NewsRepository = NewsRepository()) {
+    init(repository: NewsRepository = NewsRepository(), language: String) {
         self.repository = repository
+        self.selectedLanguage = language
         observeSearchText()
     }
 
@@ -41,10 +43,10 @@ class SearchViewModel: ObservableObject {
         do {
             self.filteredArticles.removeAll()
             if searchText.isEmpty {
-                let news = try await repository.getTopNews(language: "en", category: selectedCategory, pageSize: 10, page: 1)
+                let news = try await repository.getTopNews(language: selectedLanguage, category: selectedCategory, pageSize: 10, page: 1)
                 self.filteredArticles = news.articles
             } else {
-                let searchResults = try await repository.getSearchNews(language: "en", searchText: searchText, pageSize: 10, page: 1)
+                let searchResults = try await repository.getSearchNews(language: selectedLanguage, searchText: searchText, pageSize: 10, page: 1)
                 self.filteredArticles = searchResults.articles
             }
         } catch {

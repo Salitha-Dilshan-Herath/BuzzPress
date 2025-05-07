@@ -10,13 +10,13 @@ import SwiftUI
 struct SearchView: View {
     
     @State private var selectedCategory = Constants.CATEGORIES[0]
-    @StateObject var viewModel = SearchViewModel()
-    
+    @AppStorage("selectedLanguage") private var selectedLanguage: String = ""
+    @AppStorage("darkModeEnabled") private var darkModeEnabled: Bool = false
+    @StateObject private var viewModel = SearchViewModel(language: "")
+
     var body: some View {
         NavigationStack {
-            
             VStack(alignment: .leading, spacing: 20) {
-                // Title
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Explore")
                         .font(Font.custom(Constants.FONT_BOLD, size: 32))
@@ -24,7 +24,6 @@ struct SearchView: View {
                 }
                 .padding(.horizontal)
                 
-                // Search bar
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.gray)
@@ -48,7 +47,7 @@ struct SearchView: View {
                         ForEach(Constants.CATEGORIES, id: \.self) { category in
                             Button(action: {
                                 Task {
-                                    await viewModel.resetAndFetch(language: "en", topics: category)
+                                    await viewModel.resetAndFetch(language: selectedLanguage, topics: category)
                                     selectedCategory = category
                                 }
                             }) {
@@ -62,42 +61,61 @@ struct SearchView: View {
                                         .fill(selectedCategory == category ? Color.blue : Color.clear)
                                         .frame(height: 2)
                                 }
-                                .fixedSize() // Add this to prevent text compression
+                                .fixedSize()
                             }
                             .animation(.easeInOut, value: selectedCategory)
                         }
                     }
                     .padding(.horizontal)
-                    .frame(height: 50) // Explicit height to prevent layout issues
+                    .frame(height: 50)
                 }
                 
+                // News List or Empty State
                 ScrollView {
-                    // News articles with pagination
-                    LazyVStack(alignment: .leading, spacing: 10) {
-                        ForEach(viewModel.filteredArticles.indices, id: \.self) { index in
-                            let article = viewModel.filteredArticles[index]
-                            NavigationLink(destination: NewsDetailsView(article: article)
-                                .navigationBarBackButtonHidden(true)) {
-                                    NewsCardView(article: article)
-                                        .onAppear {
-                                            if index == viewModel.filteredArticles.count - 1 {
-                                                Task {
-                                                    await viewModel.fetchNextPage(language: "en")
+                    if viewModel.filteredArticles.isEmpty {
+                        VStack(spacing: 16) {
+                            Image(systemName: "newspaper")
+                                .resizable()
+                                .frame(width: 64, height: 64)
+                                .foregroundColor(.gray)
+                            
+                            Text("No news available for your selected category.")
+                                .font(.headline)
+                                .foregroundColor(.gray)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        LazyVStack(alignment: .leading, spacing: 10) {
+                            ForEach(viewModel.filteredArticles.indices, id: \.self) { index in
+                                let article = viewModel.filteredArticles[index]
+                                NavigationLink(destination: NewsDetailsView(article: article)
+                                    .navigationBarBackButtonHidden(true)) {
+                                        NewsCardView(article: article)
+                                            .onAppear {
+                                                if index == viewModel.filteredArticles.count - 1 {
+                                                    Task {
+                                                        await viewModel.fetchNextPage(language: selectedLanguage)
+                                                    }
                                                 }
                                             }
-                                        }
-                                }
-                                .buttonStyle(PlainButtonStyle())
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                            }
                         }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
                 }
                 .padding(.vertical)
             }
             .task {
-                await viewModel.resetAndFetch(language: "en", topics: selectedCategory)
+                await viewModel.resetAndFetch(language: selectedLanguage, topics: selectedCategory)
             }
-        }.navigationBarTitleDisplayMode(.inline)
+        }
+        .onAppear {
+            viewModel.selectedLanguage = selectedLanguage
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .preferredColorScheme(darkModeEnabled ? .dark : .light)
     }
 }
 

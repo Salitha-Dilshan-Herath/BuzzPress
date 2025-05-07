@@ -27,7 +27,7 @@ class NewsViewModel: ObservableObject {
         do {
             let newsData = try await repository.getTopNews(language: language, category: topics, pageSize: 10, page: 1)
             self.trendingArticle = newsData.articles.first
-            self.latestArticles.append(contentsOf: newsData.articles.dropFirst())
+            self.latestArticles = Array(newsData.articles.dropFirst())
             
         }catch {
             errorMessage = "Something went wrong! \(error.localizedDescription)"

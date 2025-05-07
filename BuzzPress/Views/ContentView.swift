@@ -24,10 +24,7 @@ struct ContentView: View {
             }
         } else {
             if isLoggedIn {
-                MainTabView(
-                    selectedLanguage: selectedLanguage,
-                    selectedTopics: selectedTopic
-                )
+                MainTabView()
             } else {
                 NavigationStack {
                     LoginView()

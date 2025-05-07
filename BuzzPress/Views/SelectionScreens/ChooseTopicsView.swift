@@ -14,6 +14,7 @@ struct ChooseTopicsView: View {
     @Environment(\.presentationMode) var presentationMode
     @AppStorage("isLoggedIn") private var isLoggedIn: Bool = false
     @AppStorage("selectedTopic") private var selectedTopics: String = ""
+    @AppStorage("darkModeEnabled") private var darkModeEnabled: Bool = false
 
     var body: some View {
         
@@ -92,7 +93,7 @@ struct ChooseTopicsView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(viewModel.errorMessage)
-        }
+        }.preferredColorScheme(darkModeEnabled ? .dark : .light)
     }
 }
 

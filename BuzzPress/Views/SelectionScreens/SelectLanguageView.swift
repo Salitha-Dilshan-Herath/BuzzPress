@@ -12,6 +12,7 @@ struct SelectLanguageView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var navigateToTopics = false
     @AppStorage("selectedLanguage") private var selectedLanguage: String = ""
+    @AppStorage("darkModeEnabled") private var darkModeEnabled: Bool = false
 
     var body: some View {
         NavigationStack {
@@ -98,7 +99,7 @@ struct SelectLanguageView: View {
             } message: {
                 Text(viewModel.errorMessage)
             }
-        }
+        }.preferredColorScheme(darkModeEnabled ? .dark : .light)
     }
 }
 

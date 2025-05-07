@@ -23,8 +23,11 @@ protocol FirebaseRepositoryProtocol {
     func toggleLike(articleId: String) async throws -> Bool
     func isArticleLiked(articleId: String) async throws -> Bool
     func fetchLikeAndCommentCount(articleId: String) async throws -> (likes: Int, comments: Int)
+    
     func saveUserProfile(data: [String: Any]) async throws
-
+    func fetchUserDetails() async throws -> UserProfile?
+    func logOut() async throws
+    
     func bookmarkArticle(article: Article) async throws
     func removeBookmark(articleId: String) async throws
     func isArticleBookmarked(articleId: String) async throws -> Bool
@@ -32,7 +35,7 @@ protocol FirebaseRepositoryProtocol {
 }
 
 class FirebaseRepository: FirebaseRepositoryProtocol {
-    
+        
     private let firestoreService: FirestoreServiceProtocol
     
     init(firestoreService: FirestoreServiceProtocol = FirestoreService()) {
@@ -53,6 +56,14 @@ class FirebaseRepository: FirebaseRepositoryProtocol {
     
     func saveUserProfile(data: [String : Any]) async throws {
         return try await firestoreService.saveUserProfile(data: data)   
+    }
+    
+    func fetchUserDetails() async throws -> UserProfile? {
+        return try await firestoreService.fetchUserDetails()
+    }
+    
+    func logOut() async throws {
+        return try await firestoreService.logOut()
     }
     
     func fetchSelectionForUser() async throws -> UserSelection? {

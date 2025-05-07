@@ -11,6 +11,7 @@ struct OnboardingCarouselView: View {
     
     @State private var currentPage = 0
     var onComplete: () -> Void
+    @AppStorage("darkModeEnabled") private var darkModeEnabled: Bool = false
 
     let onboardingScreens = [
         OnboardingScreen(
@@ -94,7 +95,7 @@ struct OnboardingCarouselView: View {
                 }
                 .padding(.bottom, 30)
             }
-        }
+        }.preferredColorScheme(darkModeEnabled ? .dark : .light)
     }
 }
 

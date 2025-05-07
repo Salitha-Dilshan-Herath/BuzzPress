@@ -14,7 +14,8 @@ struct TrendingNewsListView: View {
     var selectedTopics: String
     
     @Environment(\.presentationMode) var presentationMode
-    
+    @AppStorage("darkModeEnabled") private var darkModeEnabled: Bool = false
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -76,7 +77,7 @@ struct TrendingNewsListView: View {
                     .font(Font.custom(Constants.FONT_SEMI_BOLD, size: 16))
                     .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
             }
-        }
+        }.preferredColorScheme(darkModeEnabled ? .dark : .light)
     }
 }
 

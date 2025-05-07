@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct OnboardingCompleteView: View {
+    
+    @AppStorage("darkModeEnabled") private var darkModeEnabled: Bool = false
+
     var body: some View {
         VStack(spacing: 30) {
             Spacer()
@@ -44,6 +47,7 @@ struct OnboardingCompleteView: View {
             }
         }
         .padding()
+        .preferredColorScheme(darkModeEnabled ? .dark : .light)
     }
 }
 

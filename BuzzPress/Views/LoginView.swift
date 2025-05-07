@@ -16,6 +16,7 @@ struct LoginView: View {
     @AppStorage("selectedLanguage") private var selectedLanguage: String = ""
     @AppStorage("selectedTopic") private var selectedTopics: String = ""
     @AppStorage("isGuestUser") private var isGuestUser: Bool = false
+    @AppStorage("darkModeEnabled") private var darkModeEnabled: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -202,7 +203,7 @@ struct LoginView: View {
         }.navigationDestination(isPresented: $navigateToLanguageSelection) {
             SelectLanguageView(isGuest: true)
                 .navigationBarBackButtonHidden(true)
-        }
+        }.preferredColorScheme(darkModeEnabled ? .dark : .light)
     }
     
     private var isFormValid: Bool {

@@ -13,7 +13,9 @@ class ProfileSettingsViewModel: ObservableObject {
     @Published var username = ""
     @Published var fullName = ""
     @Published var email = ""
-
+    @Published var errorMessage: String?
+    @Published var isLoading: Bool = false
+    
     private let firestoreService = FirestoreService()
     
     @Published var languageMap: [String: String] = [
@@ -28,13 +30,22 @@ class ProfileSettingsViewModel: ObservableObject {
         "National", "International", "Sport", "Lifestyle", "Business",
         "Health", "Fashion", "Technology", "Science", "Art", "Politics"
     ]
-
+    
     @Published var selectedTopic: String = ""
-
+    
+    private let repository: FirebaseRepositoryProtocol
+    
+    init(repository: FirebaseRepositoryProtocol = FirebaseRepository()) {
+        self.repository = repository
+    }
     
     func loadUserDetails() async {
+        
+        isLoading = true
+        defer { isLoading = false }
+        
         do {
-            if let profile = try await firestoreService.fetchUserDetails() {
+            if let profile = try await self.repository.fetchUserDetails() {
                 self.username = profile.username
                 self.fullName = profile.fullName
                 self.email = profile.email
@@ -46,22 +57,32 @@ class ProfileSettingsViewModel: ObservableObject {
         }
     }
     
-    func saveUserDetailsUpdates() {
-        let updatedProfile = UserProfile(
-            username: username,
-            fullName: fullName,
-            email: email,
-            preferredLanguage: selectedLanguageCode,
-            preferredTopic: selectedTopic)
+    func saveUserDetailsUpdates() async {
+      
+        isLoading = true
+        defer { isLoading = false }
         
-        
-//        firestoreService.updatedUserDetails(updatedProfile) { error in
-//            if let error = error {
-//                print("##ProfileSettingsViewModel## Failed to update user details: \(error.localizedDescription)")
-//            } else {
-//                print("##ProfileSettingsViewModel## Successfully updated user details.")
-//            }
-//        }
+        do {
+            let userDict: [String: String] = [
+                "fullName": fullName,
+                "email": email,
+                "username": username,
+                "language": selectedLanguageCode,
+                "topic": selectedTopic
+            ]
+            try await self.repository.saveUserProfile(data: userDict)
+            
+        } catch {
+            print("##ProfileSettingsViewModel## Failed to load user details: \(error.localizedDescription)")
+        }
     }
-
+    
+    func userLogout() async {
+        do {
+            try await self.repository.logOut()
+        }catch {
+            print("##ProfileSettingsViewModel## Failed to logout user details: \(error.localizedDescription)")
+        }
+    }
+    
 }

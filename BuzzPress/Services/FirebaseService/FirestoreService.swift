@@ -22,7 +22,10 @@ protocol FirestoreServiceProtocol {
     func toggleLike(articleId: String) async throws -> Bool
     func isArticleLiked(articleId: String) async throws -> Bool
     func fetchLikeAndCommentCount(articleId: String) async throws -> (likes: Int, comments: Int)
+    
     func saveUserProfile(data: [String: Any]) async throws
+    func fetchUserDetails() async throws -> UserProfile?
+    func logOut() async throws
     
     func bookmarkArticle(article: Article) async throws
     func removeBookmark(articleId: String) async throws
@@ -114,6 +117,10 @@ class FirestoreService : FirestoreServiceProtocol {
         print("Selected Topic: \(topic)")
         
         return UserSelection(language: language, topic: topic)
+    }
+    
+    func logOut() async throws {
+        try? Auth.auth().signOut()
     }
     
     func addComment(articleId: String, text: String) async throws {

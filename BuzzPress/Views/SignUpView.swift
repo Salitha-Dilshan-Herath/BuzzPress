@@ -11,7 +11,8 @@ struct SignUpView: View {
     @StateObject private var viewModel = SignUpViewModel()
     @State private var showAlert = false
     @State private var navigateToLanguageSelection = false
-    
+    @AppStorage("darkModeEnabled") private var darkModeEnabled: Bool = false
+
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
@@ -153,6 +154,7 @@ struct SignUpView: View {
                     .navigationBarBackButtonHidden(true)
             }
         }.navigationBarBackButtonHidden(true)
+        .preferredColorScheme(darkModeEnabled ? .dark : .light)
     }
 }
 

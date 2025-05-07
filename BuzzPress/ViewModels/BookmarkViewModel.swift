@@ -33,12 +33,5 @@ class BookmarkViewModel: ObservableObject {
             errorMessage = "Failed to load data: \(error.localizedDescription)"
         }
     }
-
-    func removeBookmark(id: String) {
-//        Task {
-//            await CoreDataService.shared.removeBookmark(id: id)
-//            await loadBookmarks()
-//        }
-    }
 }
 

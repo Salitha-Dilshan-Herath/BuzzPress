@@ -8,13 +8,10 @@
 import SwiftUI
 
 struct MainTabView: View {
-    
-    var selectedLanguage: String
-    var selectedTopics: String
+   
     var body: some View {
         TabView{
-            HomePageView( selectedLanguage: selectedLanguage,
-                          selectedTopics: selectedTopics)
+            HomePageView()
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
                 }
@@ -37,5 +34,5 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView(selectedLanguage: "en", selectedTopics: "Busisness")
+    MainTabView()
 }

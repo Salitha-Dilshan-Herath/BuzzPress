@@ -10,13 +10,14 @@ import SwiftUI
 struct BookmarkView: View {
     @StateObject private var viewModel = BookmarkViewModel()
     @State private var searchText = ""
-    
+    @AppStorage("darkModeEnabled") private var darkModeEnabled: Bool = false
+
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
                 // Title
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Explore")
+                    Text("Bookmark")
                         .font(Font.custom(Constants.FONT_BOLD, size: 32))
                         .foregroundColor(Color(Constants.TITLE_TEXT_COLOR))
                 }
@@ -78,6 +79,6 @@ struct BookmarkView: View {
                     await viewModel.loadBookmarks()
                 }
             }
-        }
+        }.preferredColorScheme(darkModeEnabled ? .dark : .light)
     }
 }
